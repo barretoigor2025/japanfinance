@@ -110,10 +110,13 @@ export function Dashboard({ entries, settings, onAddEntry }) {
                 <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>有給休暇</div>
                 <div className="flex items-baseline gap-2">
                   <span className="text-lg font-bold font-mono" style={{ color: "var(--positive)" }}>{yukyuBalance}</span>
-                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>dias disponíveis · {yukyuUsed} usados</span>
+                  <span className="text-xs" style={{ color: "var(--text-muted)" }}>dias · {yukyuUsed} usados</span>
                 </div>
               </div>
-              <span style={{ color: "var(--text-muted)" }}>›</span>
+              <div className="text-right">
+                <div className="text-xs font-mono font-semibold" style={{ color: "var(--positive)" }}>{YEN(8 * (settings.hourlyRate || 0))}/dia</div>
+                <div style={{ color: "var(--text-muted)" }}>›</div>
+              </div>
             </div>
             {entitlement.expiringAlerts?.length > 0 && (
               <div className="mt-2 text-xs" style={{ color: "var(--negative)" }}>
