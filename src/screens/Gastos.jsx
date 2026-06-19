@@ -450,17 +450,13 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         <div className="grid grid-cols-3 gap-2">
           <SummaryCard label="Renda" value={totalRenda} color="var(--positive)" />
           <SummaryCard label="Despesas" value={totalDespesas} color="var(--negative)" />
-          <div className="rounded-xl p-3 flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-            <span className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Saldo</span>
-            <span className="text-lg font-bold font-mono leading-tight" style={{ color: saldo >= 0 ? "var(--positive)" : "var(--negative)" }}>
+          <div className="rounded-xl p-2 flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+            <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>Saldo</span>
+            <span className="text-sm font-bold font-mono leading-tight" style={{ color: saldo >= 0 ? "var(--positive)" : "var(--negative)" }}>
               {saldo >= 0 ? YEN(saldo) : `-${YEN(Math.abs(saldo))}`}
             </span>
-            <div className="text-xs mt-1 leading-snug" style={{ color: "var(--text-muted)" }}>
-              <span>Déb {YEN(totalDebito)}</span>
-              <span className="mx-0.5">·</span>
-              <span>Hag {YEN(totalHagaki)}</span>
-              <span className="mx-0.5">·</span>
-              <span style={{ color: "var(--cc)" }}>CC {YEN(totalCartao)}</span>
+            <div className="mt-0.5 leading-none" style={{ color: "var(--text-muted)", fontSize: 9 }}>
+              Déb {YEN(totalDebito)} · Hag {YEN(totalHagaki)} · <span style={{ color: "var(--cc)" }}>CC {YEN(totalCartao)}</span>
             </div>
           </div>
         </div>
@@ -866,9 +862,9 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
 // ── tiny internal helpers ──────────────────────────────────────────────────────
 function SummaryCard({ label, value, color }) {
   return (
-    <div className="rounded-xl p-3 flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
-      <span className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>{label}</span>
-      <span className="text-lg font-bold font-mono leading-tight" style={{ color }}>{YEN(value)}</span>
+    <div className="rounded-xl p-2 flex flex-col" style={{ background: "var(--bg-card)", border: "1px solid var(--border)" }}>
+      <span className="text-xs uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>{label}</span>
+      <span className="text-sm font-bold font-mono leading-tight" style={{ color }}>{YEN(value)}</span>
     </div>
   );
 }

@@ -32,7 +32,7 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
   };
 
   return (
-    <div className="space-y-3 pb-24">
+    <div className="space-y-2 pb-20">
       <div className="flex items-center justify-between">
         <div>
           <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Jornada</div>

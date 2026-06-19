@@ -130,19 +130,28 @@ export function Cartao({ extras, setExtras }) {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-screen pb-28" style={{ background: "var(--bg)", color: "var(--text)" }}>
+    <div className="flex flex-col min-h-screen pb-20" style={{ background: "var(--bg)", color: "var(--text)" }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-3 pt-3 pb-2">
-        <h1 className="text-lg font-bold" style={{ color: "var(--cc)" }}>💳 {setup.name}</h1>
-        <button
-          onClick={openSetup}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-base"
-          style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
-          title="Configurar cartão"
-        >
-          ⚙️
-        </button>
+      <div className="flex items-center justify-between px-3 pt-3 pb-2 gap-2">
+        <h1 className="text-base font-bold" style={{ color: "var(--cc)" }}>💳 {setup.name}</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openAdd}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold"
+            style={{ background: "var(--cc)", color: "#fff" }}
+          >
+            + Lançar
+          </button>
+          <button
+            onClick={openSetup}
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-sm"
+            style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
+            title="Configurar cartão"
+          >
+            ⚙
+          </button>
+        </div>
       </div>
 
       {/* ── Month picker ── */}
@@ -207,7 +216,7 @@ export function Cartao({ extras, setExtras }) {
                 const cat = getCat(id);
                 const pct = total > 0 ? (amt / total) * 100 : 0;
                 return (
-                  <div key={id} className="py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                  <div key={id} className="py-1.5 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-sm flex items-center gap-1.5" style={{ color: "var(--text)" }}>
                         <span>{cat.icon}</span>
@@ -248,10 +257,10 @@ export function Cartao({ extras, setExtras }) {
                   <button
                     key={l.id}
                     onClick={() => openEdit(l)}
-                    className="w-full flex items-center gap-3 py-2.5 border-b last:border-0 text-left"
+                    className="w-full flex items-center gap-2 py-1.5 border-b last:border-0 text-left"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <span className="text-xl shrink-0">{cat.icon}</span>
+                    <span className="text-base shrink-0">{cat.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{cat.label}</p>
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -276,16 +285,6 @@ export function Cartao({ extras, setExtras }) {
 
       </div>
 
-      {/* ── Add button ── */}
-      <div className="fixed bottom-20 left-0 right-0 px-4 z-30 max-w-lg mx-auto">
-        <button
-          onClick={openAdd}
-          className="w-full py-3 rounded-xl text-sm font-semibold shadow-lg"
-          style={{ background: "var(--cc)", color: "#fff" }}
-        >
-          + Lançamento
-        </button>
-      </div>
 
       {/* ── Add/Edit entry modal ── */}
       {entryModal && (

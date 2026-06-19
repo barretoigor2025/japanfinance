@@ -40,7 +40,7 @@ export function Dashboard({ entries, settings, onAddEntry }) {
   const lastEntry = [...entries].sort((a, b) => b.date.localeCompare(a.date))[0];
 
   return (
-    <div className="space-y-3 pb-24">
+    <div className="space-y-2 pb-20">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -63,25 +63,25 @@ export function Dashboard({ entries, settings, onAddEntry }) {
       {/* Key metrics — 2×2 grid with moderate sizing */}
       <div className="grid grid-cols-2 gap-2">
         <Card>
-          <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Bruto</div>
-          <div className="text-xl font-mono font-bold" style={{ color: "var(--positive)" }}>{YEN(grossWithTeate)}</div>
-          {totalTeate > 0 && <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>+{YEN(totalTeate)} 手当</div>}
+          <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Bruto</div>
+          <div className="text-lg font-mono font-bold" style={{ color: "var(--positive)" }}>{YEN(grossWithTeate)}</div>
+          {totalTeate > 0 && <div className="text-xs" style={{ color: "var(--text-muted)" }}>+{YEN(totalTeate)} 手当</div>}
         </Card>
         <Card>
-          <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Líquido (est.)</div>
-          <div className="text-xl font-mono font-bold" style={{ color: "var(--warning)" }}>{YEN(netPay)}</div>
-          <div className="text-xs mt-0.5" style={{ color: "var(--negative)" }}>-{YEN(totalDeductions)}</div>
+          <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Líquido (est.)</div>
+          <div className="text-lg font-mono font-bold" style={{ color: "var(--warning)" }}>{YEN(netPay)}</div>
+          <div className="text-xs" style={{ color: "var(--negative)" }}>-{YEN(totalDeductions)}</div>
         </Card>
         <Card>
-          <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Horas</div>
-          <div className="text-xl font-mono font-bold" style={{ color: "var(--text)" }}>{totalHours.toFixed(1)}h</div>
-          <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{workedDays} dias{yukyuDays > 0 ? ` +${yukyuDays}有給` : ""}</div>
+          <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Horas</div>
+          <div className="text-lg font-mono font-bold" style={{ color: "var(--text)" }}>{totalHours.toFixed(1)}h</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>{workedDays} dias{yukyuDays > 0 ? ` +${yukyuDays}有給` : ""}</div>
         </Card>
         <Card>
-          <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Hora Extra</div>
-          <div className="text-xl font-mono font-bold" style={{ color: otHours > 60 ? "var(--negative)" : otHours > 0 ? "var(--warning)" : "var(--text)" }}>{otHours.toFixed(1)}h</div>
-          {otHours > 60 && <div className="text-xs mt-0.5" style={{ color: "var(--negative)" }}>⚠️ acima de 60h</div>}
-          {otHours > 0 && otHours <= 60 && <div className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{((otHours / 60) * 100).toFixed(0)}% do limite</div>}
+          <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Hora Extra</div>
+          <div className="text-lg font-mono font-bold" style={{ color: otHours > 60 ? "var(--negative)" : otHours > 0 ? "var(--warning)" : "var(--text)" }}>{otHours.toFixed(1)}h</div>
+          {otHours > 60 && <div className="text-xs" style={{ color: "var(--negative)" }}>⚠️ acima de 60h</div>}
+          {otHours > 0 && otHours <= 60 && <div className="text-xs" style={{ color: "var(--text-muted)" }}>{((otHours / 60) * 100).toFixed(0)}% do limite</div>}
         </Card>
       </div>
 
