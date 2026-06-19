@@ -21,8 +21,16 @@ const CATS = [
   { id: "outro",        label: "Outro",         icon: "📌" },
 ];
 
+const LEGACY_MAP = {
+  mercado_jp: "supermercado",
+  mercado_br: "supermercado",
+  posto:      "combustivel",
+  homecenter: "outro",
+};
+
 function getCat(id) {
-  return CATS.find(c => c.id === id) || CATS[CATS.length - 1];
+  const mapped = LEGACY_MAP[id] || id;
+  return CATS.find(c => c.id === mapped) || CATS[CATS.length - 1];
 }
 
 // ── default setup shape ────────────────────────────────────────────────────────
