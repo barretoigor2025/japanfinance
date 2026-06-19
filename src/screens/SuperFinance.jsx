@@ -4,24 +4,23 @@ import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 import { allMonthsFromData, annualTaxSnapshot, buildMonthlyFinance, monthLabel } from "../utils/finance.js";
 
 const CAT_LABELS = {
+  mercado_jp:  "Mercado JP",
+  mercado_br:  "Mercado BR",
+  restaurante: "Restaurante",
+  konbini:     "Konbini",
+  combustivel: "Combustível",
+  online:      "Online/Amazon",
+  farmacia:    "Farmácia",
+  homecenter:  "HomeCenter",
+  outro:       "Outro",
+  // legacy
   supermercado: "Supermercado",
-  restaurante:  "Restaurante",
-  konbini:      "Konbini",
-  combustivel:  "Combustível",
-  online:       "Online/Amazon",
-  farmacia:     "Farmácia",
-  outro:        "Outro",
-  mercado_jp:   "Mercado JP",
-  mercado_br:   "Mercado BR",
   posto:        "Posto",
-  homecenter:   "Home center",
 };
 
 const LEGACY_CAT_MAP = {
-  mercado_jp: "supermercado",
-  mercado_br: "supermercado",
-  posto:      "combustivel",
-  homecenter: "outro",
+  supermercado: "mercado_jp",
+  posto:        "combustivel",
 };
 
 function normalizeCats(cats) {

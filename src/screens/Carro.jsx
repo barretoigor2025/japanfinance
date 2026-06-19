@@ -26,13 +26,14 @@ export function Carro({ carro, setCarro }) {
   const [addVeiculoModal, setAddVeiculoModal] = useState(false);
   const [parcelaForm, setParcelaForm] = useState({ valor: "", mesRef: "" });
   const [veiculoForm, setVeiculoForm] = useState({ nome: "", valorTotal: "" });
+  const [confirmPay, setConfirmPay] = useState(null); // { label, amount, currentlyPaid, execute }
 
   const fin = fins[selectedIdx] || null;
 
   // ── mutators ───────────────────────────────────────────────────────────────
   const update = (fn) => setCarro(prev => fn(structuredClone(prev || { financiamentos: [] })));
 
-  function toggleEntradaPaga(finId, entId) {
+  function doToggleEntradaPaga(finId, entId) {
     update(c => {
       const f = c.financiamentos.find(f => f.id === finId);
       if (!f) return c;
@@ -42,7 +43,7 @@ export function Carro({ carro, setCarro }) {
     });
   }
 
-  function toggleParcelaPaga(finId, parId) {
+  function doToggleParcelaPaga(finId, parId) {
     update(c => {
       const f = c.financiamentos.find(f => f.id === finId);
       if (!f) return c;
@@ -50,6 +51,14 @@ export function Carro({ carro, setCarro }) {
       if (p) p.pago = !p.pago;
       return c;
     });
+  }
+
+  function requestToggleEntrada(finId, e) {
+    setConfirmPay({ label: e.descricao || "Entrada", amount: e.valor, currentlyPaid: e.pago, execute: () => doToggleEntradaPaga(finId, e.id) });
+  }
+
+  function requestToggleParcela(finId, p) {
+    setConfirmPay({ label: `Parcela #${p.numero} (${fmtMesRef(p.mesRef)})`, amount: p.valor, currentlyPaid: p.pago, execute: () => doToggleParcelaPaga(finId, p.id) });
   }
 
   function removeParcela(finId, parId) {
@@ -270,7 +279,7 @@ export function Carro({ carro, setCarro }) {
                         style={{ borderColor: "var(--border)" }}
                       >
                         <button
-                          onClick={() => toggleEntradaPaga(fin.id, e.id)}
+                          onClick={() => requestToggleEntrada(fin.id, e)}
                           className="shrink-0 w-5 h-5 rounded flex items-center justify-center transition-colors"
                           style={{
                             background: e.pago ? "var(--positive)" : "transparent",
@@ -319,7 +328,7 @@ export function Carro({ carro, setCarro }) {
                       >
                         {/* checkbox */}
                         <button
-                          onClick={() => toggleParcelaPaga(fin.id, p.id)}
+                          onClick={() => requestToggleParcela(fin.id, p)}
                           className="shrink-0 w-5 h-5 rounded flex items-center justify-center transition-colors"
                           style={{
                             background: p.pago ? "var(--positive)" : "transparent",
@@ -441,6 +450,55 @@ export function Carro({ carro, setCarro }) {
                 style={{ background: "var(--positive)", color: "#fff" }}
               >
                 Adicionar
+              </button>
+            </div>
+          </div>
+        </BottomSheet>
+      )}
+
+      {/* ── payment confirmation modal ── */}
+      {confirmPay && (
+        <BottomSheet
+          title={confirmPay.currentlyPaid ? "Remover pagamento" : "Confirmar pagamento"}
+          onClose={() => setConfirmPay(null)}
+        >
+          <div className="p-4 space-y-4">
+            <div
+              className="rounded-xl p-4 text-center"
+              style={{
+                background: confirmPay.currentlyPaid ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
+                border: `1px solid ${confirmPay.currentlyPaid ? "rgba(239,68,68,0.25)" : "rgba(34,197,94,0.25)"}`,
+              }}
+            >
+              <div className="text-sm font-semibold mb-1" style={{ color: "var(--text-sub)" }}>{confirmPay.label}</div>
+              <div className="text-2xl font-mono font-bold" style={{ color: confirmPay.currentlyPaid ? "var(--negative)" : "var(--positive)" }}>
+                {YEN(confirmPay.amount)}
+              </div>
+              {!confirmPay.currentlyPaid && (
+                <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  Pago em: {new Date().toLocaleDateString("pt-BR")}
+                </div>
+              )}
+            </div>
+            {confirmPay.currentlyPaid && (
+              <p className="text-sm text-center" style={{ color: "var(--text-sub)" }}>
+                Remover o registro de pagamento desta parcela?
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmPay(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm"
+                style={{ border: "1px solid var(--border-mid)", color: "var(--text-sub)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { confirmPay.execute(); setConfirmPay(null); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: confirmPay.currentlyPaid ? "var(--negative)" : "var(--positive)", color: "#fff" }}
+              >
+                {confirmPay.currentlyPaid ? "Remover" : "Confirmar pago"}
               </button>
             </div>
           </div>

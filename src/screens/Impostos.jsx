@@ -39,7 +39,8 @@ export function Impostos({ extras, setExtras }) {
   const [showVehicleForm, setShowVehicleForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentVehicleId, setPaymentVehicleId] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null); // { type, key }
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [confirmPay, setConfirmPay] = useState(null);
 
   const [gensenForm, setGensenForm] = useState({ nenBun: new Date().getFullYear() - 1, empresa: "", shiharaiGaku: "", gensenZei: "", shakaiHoken: "" });
   const [vehicleName, setVehicleName] = useState("");
@@ -142,7 +143,7 @@ export function Impostos({ extras, setExtras }) {
     setShowPaymentForm(false);
   }
 
-  function toggleParcela(vehicleId, year, parcelNum) {
+  function doToggleParcela(vehicleId, year, parcelNum) {
     update(next => {
       const payment = next.taxPayments.find(p => p.vehicleId === vehicleId && p.year === year);
       if (!payment) return;
@@ -151,6 +152,15 @@ export function Impostos({ extras, setExtras }) {
         parcela.paid = !parcela.paid;
         parcela.paidDate = parcela.paid ? new Date().toISOString().slice(0, 10) : null;
       }
+    });
+  }
+
+  function requestToggleParcela(vehicleName, vehicleId, year, parcela) {
+    setConfirmPay({
+      label: `${vehicleName} · Parcela ${parcela.num} (${year})`,
+      amount: parcela.value,
+      currentlyPaid: parcela.paid,
+      execute: () => doToggleParcela(vehicleId, year, parcela.num),
     });
   }
 
@@ -302,7 +312,7 @@ export function Impostos({ extras, setExtras }) {
                   {(payment.parcelas || []).map(parcela => (
                     <button
                       key={parcela.num}
-                      onClick={() => toggleParcela(vehicle.id, payment.year, parcela.num)}
+                      onClick={() => requestToggleParcela(vehicle.name, vehicle.id, payment.year, parcela)}
                       className="w-full flex items-center justify-between py-1 border-b last:border-0 text-left"
                       style={{ borderColor: "var(--border)" }}
                     >
@@ -448,6 +458,55 @@ export function Impostos({ extras, setExtras }) {
             <button onClick={savePayment} className="w-full py-2.5 rounded-xl text-sm font-semibold" style={{ background: "var(--text)", color: "var(--bg)" }}>
               Salvar
             </button>
+          </div>
+        </BottomSheet>
+      )}
+
+      {/* ── Payment confirmation modal ────────────────────────────────────────────── */}
+      {confirmPay && (
+        <BottomSheet
+          title={confirmPay.currentlyPaid ? "Remover pagamento" : "Confirmar pagamento"}
+          onClose={() => setConfirmPay(null)}
+        >
+          <div className="p-4 space-y-4">
+            <div
+              className="rounded-xl p-4 text-center"
+              style={{
+                background: confirmPay.currentlyPaid ? "rgba(239,68,68,0.08)" : "rgba(34,197,94,0.08)",
+                border: `1px solid ${confirmPay.currentlyPaid ? "rgba(239,68,68,0.25)" : "rgba(34,197,94,0.25)"}`,
+              }}
+            >
+              <div className="text-sm font-semibold mb-1" style={{ color: "var(--text-sub)" }}>{confirmPay.label}</div>
+              <div className="text-2xl font-mono font-bold" style={{ color: confirmPay.currentlyPaid ? "var(--negative)" : "var(--positive)" }}>
+                {YEN(confirmPay.amount)}
+              </div>
+              {!confirmPay.currentlyPaid && (
+                <div className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
+                  Pago em: {new Date().toLocaleDateString("pt-BR")}
+                </div>
+              )}
+            </div>
+            {confirmPay.currentlyPaid && (
+              <p className="text-sm text-center" style={{ color: "var(--text-sub)" }}>
+                Remover o registro de pagamento desta parcela?
+              </p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setConfirmPay(null)}
+                className="flex-1 py-2.5 rounded-xl text-sm"
+                style={{ border: "1px solid var(--border-mid)", color: "var(--text-sub)" }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => { confirmPay.execute(); setConfirmPay(null); }}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
+                style={{ background: confirmPay.currentlyPaid ? "var(--negative)" : "var(--positive)", color: "#fff" }}
+              >
+                {confirmPay.currentlyPaid ? "Remover" : "Confirmar pago"}
+              </button>
+            </div>
           </div>
         </BottomSheet>
       )}

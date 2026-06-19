@@ -12,20 +12,21 @@ function todayStr() {
 }
 
 const CATS = [
-  { id: "supermercado", label: "Supermercado",  icon: "🛒" },
-  { id: "restaurante",  label: "Restaurante",   icon: "🍜" },
-  { id: "konbini",      label: "Konbini",       icon: "🏪" },
-  { id: "combustivel",  label: "Combustível",   icon: "⛽" },
-  { id: "online",       label: "Online/Amazon", icon: "🌐" },
-  { id: "farmacia",     label: "Farmácia",      icon: "💊" },
-  { id: "outro",        label: "Outro",         icon: "📌" },
+  { id: "mercado_jp",  label: "Mercado JP",    icon: "🏬" },
+  { id: "mercado_br",  label: "Mercado BR",    icon: "🛒" },
+  { id: "restaurante", label: "Restaurante",   icon: "🍜" },
+  { id: "konbini",     label: "Konbini",       icon: "🏪" },
+  { id: "combustivel", label: "Combustível",   icon: "⛽" },
+  { id: "online",      label: "Online/Amazon", icon: "🌐" },
+  { id: "farmacia",    label: "Farmácia",      icon: "💊" },
+  { id: "homecenter",  label: "HomeCenter",    icon: "🔨" },
+  { id: "outro",       label: "Outro",         icon: "📌" },
 ];
 
+// Old entries with "supermercado" (created before split) default to mercado_jp
 const LEGACY_MAP = {
-  mercado_jp: "supermercado",
-  mercado_br: "supermercado",
-  posto:      "combustivel",
-  homecenter: "outro",
+  supermercado: "mercado_jp",
+  posto:        "combustivel",
 };
 
 function getCat(id) {

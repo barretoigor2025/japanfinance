@@ -17,6 +17,7 @@ export function EntryForm({ initial, settings, onSave, onClose, entries = [] }) 
   }, [form, settings]);
 
   const conflict = form.dayType !== "yukyu" ? checkConflict(form, entries, initial?.id) : null;
+  const isDobra = form.start === "05:45" && form.end === "03:45" && Number(form.breakMinutes) === 120;
 
   const breakOptions = [
     { value: 0, label: "Sem" },
@@ -37,18 +38,19 @@ export function EntryForm({ initial, settings, onSave, onClose, entries = [] }) 
         {/* Day type */}
         <div className="space-y-1.5">
           <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Tipo de Dia</label>
-          <div className="flex gap-2">
-            <select
-              value={form.dayType}
-              onChange={e => set("dayType", e.target.value)}
-              className="flex-1 rounded-lg px-3 py-2 text-sm focus:outline-none"
-              style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
-            >
-              {DAY_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
-            </select>
+          <select
+            value={form.dayType}
+            onChange={e => set("dayType", e.target.value)}
+            className="w-full rounded-lg px-3 py-2 text-sm focus:outline-none"
+            style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
+          >
+            {DAY_TYPES.map(d => <option key={d.value} value={d.value}>{d.label}</option>)}
+          </select>
+          {/* Shift presets */}
+          <div className="flex gap-1.5">
             <button
               onClick={() => setForm(f => ({ ...f, dayType: "normal", start: "05:45", end: "17:00", breakMinutes: 60 }))}
-              className="px-2.5 py-2 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap"
+              className="flex-1 py-1.5 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap"
               style={{
                 borderColor: "var(--warning)",
                 background: form.start === "05:45" && form.end === "17:00" ? "var(--warning)" : "transparent",
@@ -57,13 +59,22 @@ export function EntryForm({ initial, settings, onSave, onClose, entries = [] }) 
             >☀️ 昼勤</button>
             <button
               onClick={() => setForm(f => ({ ...f, dayType: "normal", start: "17:00", end: "03:45", breakMinutes: 60 }))}
-              className="px-2.5 py-2 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap"
+              className="flex-1 py-1.5 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap"
               style={{
                 borderColor: "var(--night)",
                 background: form.start === "17:00" && form.end === "03:45" ? "var(--night)" : "transparent",
                 color: form.start === "17:00" && form.end === "03:45" ? "#fff" : "var(--night)",
               }}
             >🌙 夜勤</button>
+            <button
+              onClick={() => setForm(f => ({ ...f, dayType: "normal", start: "05:45", end: "03:45", breakMinutes: 120 }))}
+              className="flex-1 py-1.5 rounded-lg text-xs font-bold border-2 transition-all whitespace-nowrap"
+              style={{
+                borderColor: "var(--info)",
+                background: isDobra ? "var(--info)" : "transparent",
+                color: isDobra ? "#fff" : "var(--info)",
+              }}
+            >⚡ Dobra</button>
           </div>
         </div>
 
