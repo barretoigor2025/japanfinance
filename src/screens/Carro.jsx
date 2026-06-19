@@ -118,7 +118,7 @@ export function Carro({ carro, setCarro }) {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col pb-28 px-3 pt-3 gap-3" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100%" }}>
+    <div className="flex flex-col pb-28 px-3 pt-2 gap-2" style={{ background: "var(--bg)", color: "var(--text)", minHeight: "100%" }}>
 
       {/* empty state */}
       {fins.length === 0 && (
@@ -177,19 +177,19 @@ export function Carro({ carro, setCarro }) {
                 {/* vehicle name */}
                 {editMode ? (
                   <input
-                    className="w-full rounded-lg px-2 py-1 text-sm font-semibold mb-2 focus:outline-none"
+                    className="w-full rounded-lg px-2 py-1 text-sm font-semibold mb-1 focus:outline-none"
                     style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
                     value={fin.nome}
                     onChange={e => updateFinField(fin.id, "nome", e.target.value)}
                     placeholder="Nome do veículo"
                   />
                 ) : (
-                  <p className="text-sm font-semibold mb-2" style={{ color: "var(--text)" }}>{fin.nome || "Veículo"}</p>
+                  <p className="text-sm font-semibold mb-0.5" style={{ color: "var(--text)" }}>{fin.nome || "Veículo"}</p>
                 )}
 
                 {/* total value */}
                 {editMode ? (
-                  <div className="flex items-center gap-2 rounded-lg px-2 py-1 mb-3" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
+                  <div className="flex items-center gap-2 rounded-lg px-2 py-1 mb-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
                     <span className="text-xs" style={{ color: "var(--text-muted)" }}>¥</span>
                     <input
                       type="number"
@@ -202,19 +202,19 @@ export function Carro({ carro, setCarro }) {
                     />
                   </div>
                 ) : (
-                  <p className="text-xs mb-3" style={{ color: "var(--text-muted)" }}>Valor total: {YEN(fin.valorTotal)}</p>
+                  <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Valor total: {YEN(fin.valorTotal)}</p>
                 )}
 
                 {/* percentage */}
-                <div className="flex items-baseline gap-1 mb-2">
-                  <span className="text-xl font-bold font-mono" style={{ color: isQuitado ? "var(--positive)" : "var(--text)" }}>
+                <div className="flex items-baseline gap-1 mb-1">
+                  <span className="text-lg font-bold font-mono" style={{ color: isQuitado ? "var(--positive)" : "var(--text)" }}>
                     {percentPago.toFixed(1)}%
                   </span>
                   <span className="text-xs" style={{ color: "var(--text-muted)" }}>pago</span>
                 </div>
 
                 {/* progress bar */}
-                <div className="h-2.5 rounded-full overflow-hidden mb-3" style={{ background: "var(--bg-elevated)" }}>
+                <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: "var(--bg-elevated)" }}>
                   <div
                     className="h-full rounded-full transition-all"
                     style={{
@@ -225,18 +225,18 @@ export function Carro({ carro, setCarro }) {
                 </div>
 
                 {/* 3-col grid */}
-                <div className="grid grid-cols-3 gap-2 mb-3">
-                  <div className="rounded-lg p-2 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
+                <div className="grid grid-cols-3 gap-1.5 mb-2">
+                  <div className="rounded-lg p-1.5 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
                     <span className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>Pago</span>
-                    <span className="text-sm font-bold font-mono" style={{ color: "var(--positive)" }}>{YEN(totalPago)}</span>
+                    <span className="text-xs font-bold font-mono" style={{ color: "var(--positive)" }}>{YEN(totalPago)}</span>
                   </div>
-                  <div className="rounded-lg p-2 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
+                  <div className="rounded-lg p-1.5 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
                     <span className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>Restante</span>
-                    <span className="text-sm font-bold font-mono" style={{ color: totalRestante > 0 ? "var(--negative)" : "var(--text-sub)" }}>{YEN(totalRestante)}</span>
+                    <span className="text-xs font-bold font-mono" style={{ color: totalRestante > 0 ? "var(--negative)" : "var(--text-sub)" }}>{YEN(totalRestante)}</span>
                   </div>
-                  <div className="rounded-lg p-2 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
+                  <div className="rounded-lg p-1.5 flex flex-col items-center" style={{ background: "var(--bg-elevated)" }}>
                     <span className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>Parcelas</span>
-                    <span className="text-sm font-bold" style={{ color: "var(--text)" }}>{pagoCount}/{totalParcelas}</span>
+                    <span className="text-xs font-bold" style={{ color: "var(--text)" }}>{pagoCount}/{totalParcelas}</span>
                   </div>
                 </div>
 
@@ -266,7 +266,7 @@ export function Carro({ carro, setCarro }) {
                     {fin.entradas.map(e => (
                       <div
                         key={e.id}
-                        className="flex items-center gap-3 py-2 border-b last:border-0"
+                        className="flex items-center gap-2 py-1 border-b last:border-0"
                         style={{ borderColor: "var(--border)" }}
                       >
                         <button
@@ -314,7 +314,7 @@ export function Carro({ carro, setCarro }) {
                     return (
                       <div
                         key={p.id}
-                        className="flex items-center gap-2 py-2 border-b last:border-0"
+                        className="flex items-center gap-2 py-1 border-b last:border-0"
                         style={{ borderColor: "var(--border)" }}
                       >
                         {/* checkbox */}

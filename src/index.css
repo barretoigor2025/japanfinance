@@ -4,12 +4,12 @@
 
 :root, .theme-dark {
   --bg: #0a0a0a;
-  --bg-card: #111111;
-  --bg-elevated: #1a1a1a;
-  --bg-input: #111111;
-  --border: #1e1e1e;
-  --border-mid: #2a2a2a;
-  --border-strong: #3a3a3a;
+  --bg-card: #191919;
+  --bg-elevated: #232323;
+  --bg-input: #191919;
+  --border: #2a2a2a;
+  --border-mid: #363636;
+  --border-strong: #444444;
   --text: #f0f0f0;
   --text-sub: #888888;
   --text-muted: #444444;

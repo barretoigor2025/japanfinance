@@ -3,7 +3,7 @@
 export function Card({ children, className = "", style = {} }) {
   return (
     <div
-      className={`rounded-xl p-3 ${className}`}
+      className={`rounded-xl p-2 ${className}`}
       style={{ background: "var(--bg-card)", border: "1px solid var(--border)", ...style }}
     >
       {children}
@@ -13,7 +13,7 @@ export function Card({ children, className = "", style = {} }) {
 
 export function SectionLabel({ children }) {
   return (
-    <div className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>
+    <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>
       {children}
     </div>
   );
