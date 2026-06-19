@@ -4,15 +4,34 @@ import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 import { allMonthsFromData, annualTaxSnapshot, buildMonthlyFinance, monthLabel } from "../utils/finance.js";
 
 const CAT_LABELS = {
-  konbini: "Konbini",
-  mercado_jp: "Mercado JP",
-  mercado_br: "Mercado BR",
-  restaurante: "Restaurante",
-  posto: "Posto",
-  online: "Online",
-  homecenter: "Home center",
-  outro: "Outros",
+  supermercado: "Supermercado",
+  restaurante:  "Restaurante",
+  konbini:      "Konbini",
+  combustivel:  "Combustível",
+  online:       "Online/Amazon",
+  farmacia:     "Farmácia",
+  outro:        "Outro",
+  mercado_jp:   "Mercado JP",
+  mercado_br:   "Mercado BR",
+  posto:        "Posto",
+  homecenter:   "Home center",
 };
+
+const LEGACY_CAT_MAP = {
+  mercado_jp: "supermercado",
+  mercado_br: "supermercado",
+  posto:      "combustivel",
+  homecenter: "outro",
+};
+
+function normalizeCats(cats) {
+  const merged = {};
+  cats.forEach(c => {
+    const key = LEGACY_CAT_MAP[c.cat] || c.cat;
+    merged[key] = (merged[key] || 0) + c.amount;
+  });
+  return merged;
+}
 
 function pct(part, total) {
   if (!total) return 0;
@@ -56,6 +75,37 @@ export function SuperFinance({ entries, settings, gastos, extras }) {
   const [month, setMonth] = useState(initialMonth);
   const data = useMemo(() => buildMonthlyFinance(entries, settings, gastos, extras, month), [entries, settings, gastos, extras, month]);
   const annual = annualTaxSnapshot(extras);
+
+  const prevMonth = useMemo(() => {
+    const [y, m] = month.split("-").map(Number);
+    const d = new Date(y, m - 2, 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  }, [month]);
+  const prevData = useMemo(() => buildMonthlyFinance(entries, settings, gastos, extras, prevMonth), [entries, settings, gastos, extras, prevMonth]);
+
+  const curCatMap = useMemo(() => normalizeCats(data.card.categories), [data.card.categories]);
+  const prevCatMap = useMemo(() => normalizeCats(prevData.card.categories), [prevData.card.categories]);
+  const catDeltas = useMemo(() => {
+    const keys = [...new Set([...Object.keys(curCatMap), ...Object.keys(prevCatMap)])];
+    return keys
+      .map(cat => ({ cat, cur: curCatMap[cat] || 0, prev: prevCatMap[cat] || 0, delta: (curCatMap[cat] || 0) - (prevCatMap[cat] || 0) }))
+      .filter(c => c.cur > 0 || c.prev > 0)
+      .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }, [curCatMap, prevCatMap]);
+
+  const itemDeltas = useMemo(() => {
+    const allItems = [...data.budget.debitItems, ...data.budget.hagakiItems, ...prevData.budget.debitItems, ...prevData.budget.hagakiItems];
+    const seen = new Set();
+    const ids = [];
+    allItems.forEach(i => { if (!seen.has(i.id)) { seen.add(i.id); ids.push(i); } });
+    return ids.map(item => {
+      const cur = [...data.budget.debitItems, ...data.budget.hagakiItems].find(x => x.id === item.id)?.amount || 0;
+      const prev = [...prevData.budget.debitItems, ...prevData.budget.hagakiItems].find(x => x.id === item.id)?.amount || 0;
+      return { name: item.name, cur, prev, delta: cur - prev };
+    }).filter(i => i.delta !== 0 && (i.cur > 0 || i.prev > 0)).sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  }, [data.budget, prevData.budget]);
+
+  const hasPrevData = prevData.incomeReal > 0 || prevData.card.total > 0 || prevData.totalOut > 0;
   const cardLimit = extras?.cartao?.setup?.limit || 0;
   const cardUsePct = pct(data.card.total, cardLimit);
   const expensePct = pct(data.totalOut, data.incomeReal);
@@ -181,6 +231,82 @@ export function SuperFinance({ entries, settings, gastos, extras }) {
           </div>
         )}
       </Card>
+
+      {hasPrevData && (
+        <Card>
+          <div className="flex items-center justify-between mb-2">
+            <SectionLabel>📈 vs {monthLabel(prevMonth)}</SectionLabel>
+            <Badge color={(data.totalOut - prevData.totalOut) <= 0 ? "green" : "red"}>
+              {data.totalOut - prevData.totalOut > 0 ? "+" : ""}{YEN(data.totalOut - prevData.totalOut)} saídas
+            </Badge>
+          </div>
+
+          {/* Totals row */}
+          <div className="grid grid-cols-3 gap-1.5 mb-3">
+            {[
+              { label: "Renda", cur: data.incomeReal, prev: prevData.incomeReal, positive: true },
+              { label: "Cartão", cur: data.card.total, prev: prevData.card.total, positive: false },
+              { label: "Contas", cur: data.budget.fixedExpenses, prev: prevData.budget.fixedExpenses, positive: false },
+            ].map(({ label, cur, prev, positive }) => {
+              const delta = cur - prev;
+              const good = positive ? delta >= 0 : delta <= 0;
+              return (
+                <div key={label} className="rounded-lg p-1.5 text-center" style={{ background: "var(--bg-elevated)" }}>
+                  <div className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>{label}</div>
+                  <div className="text-xs font-mono font-bold" style={{ color: "var(--text)" }}>{YEN(cur)}</div>
+                  {delta !== 0 && (
+                    <div className="text-xs font-mono" style={{ color: good ? "var(--positive)" : "var(--negative)" }}>
+                      {delta > 0 ? "▲" : "▼"}{YEN(Math.abs(delta))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Card categories delta */}
+          {catDeltas.length > 0 && (
+            <>
+              <div className="text-xs font-medium mb-1" style={{ color: "var(--text-sub)" }}>Cartão por categoria</div>
+              {catDeltas.slice(0, 5).map(({ cat, cur, prev, delta }) => (
+                <div key={cat} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                  <span className="text-xs" style={{ color: "var(--text-sub)" }}>{CAT_LABELS[cat] || cat}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono" style={{ color: "var(--cc)" }}>{YEN(cur)}</span>
+                    {delta !== 0 && (
+                      <span className="text-xs font-mono" style={{ color: delta > 0 ? "var(--negative)" : "var(--positive)" }}>
+                        {delta > 0 ? "▲" : "▼"}{YEN(Math.abs(delta))}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </>
+          )}
+
+          {/* Fixed expense item deltas */}
+          {itemDeltas.length > 0 && (
+            <div className="mt-2">
+              <div className="text-xs font-medium mb-1" style={{ color: "var(--text-sub)" }}>Contas que mudaram</div>
+              {itemDeltas.slice(0, 6).map(item => (
+                <div key={item.name} className="flex items-center justify-between py-1 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                  <span className="text-xs" style={{ color: "var(--text-sub)" }}>{item.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-mono" style={{ color: "var(--text)" }}>{YEN(item.cur)}</span>
+                    <span className="text-xs font-mono" style={{ color: item.delta > 0 ? "var(--negative)" : "var(--positive)" }}>
+                      {item.delta > 0 ? "▲" : "▼"}{YEN(Math.abs(item.delta))}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {catDeltas.length === 0 && itemDeltas.length === 0 && (
+            <p className="text-xs py-2 text-center" style={{ color: "var(--text-muted)" }}>Sem dados do mês anterior para comparar.</p>
+          )}
+        </Card>
+      )}
 
       {annual && (
         <Card>

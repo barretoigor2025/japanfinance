@@ -18,12 +18,13 @@ import { Cartao } from "./screens/Cartao.jsx";
 import { normalizeExtras } from "./utils/backup.js";
 
 const TABS = [
-  { id: "dashboard", label: "Início",     icon: "🏠" },
-  { id: "entries",   label: "Jornada",    icon: "🕐" },
-  { id: "reports",   label: "Relatórios", icon: "📊" },
-  { id: "cartao",    label: "Cartão",     icon: "💳" },
-  { id: "gastos",    label: "Gastos",     icon: "💰" },
-  { id: "config",    label: "Config",     icon: "⚙️" },
+  { id: "dashboard", label: "Início",   icon: "🏠" },
+  { id: "entries",   label: "Jornada",  icon: "🕐" },
+  { id: "finance",   label: "Análise",  icon: "🧠" },
+  { id: "reports",   label: "Relat.",   icon: "📊" },
+  { id: "cartao",    label: "Cartão",   icon: "💳" },
+  { id: "gastos",    label: "Gastos",   icon: "💰" },
+  { id: "config",    label: "Config",   icon: "⚙️" },
 ];
 
 export default function App() {
@@ -117,9 +118,9 @@ export default function App() {
           {TABS.map(t => {
             const active = tab === t.id;
             return (
-              <button key={t.id} onClick={() => setTab(t.id)} className="min-w-[4.5rem] flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors">
-                <span className="text-base leading-none">{t.icon}</span>
-                <span className="text-xs font-medium" style={{ color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
+              <button key={t.id} onClick={() => setTab(t.id)} className="min-w-0 flex-1 flex flex-col items-center gap-0 py-1.5 transition-colors">
+                <span className="text-sm leading-none">{t.icon}</span>
+                <span className="font-medium leading-tight" style={{ fontSize: 9, color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
                 {active && <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--nav-active)" }} />}
               </button>
             );
