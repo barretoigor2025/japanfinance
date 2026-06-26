@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#0a0a0a" />
+  <meta name="theme-color" content="#ffffff" />
   <meta name="description" content="Japanese Permanent Visa Eligibility Analyzer — análise estimada de elegibilidade ao visto permanente japonês com base nos requisitos oficiais da Imigração." />
   <title>Japanese Permanent Visa Eligibility Analyzer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -18,20 +18,20 @@
       em: base de regras por categoria → questionário → motor de pontuação.
     */
     :root {
-      --bg:        #0a0a0a;
-      --bg-card:   #161616;
-      --bg-elev:   #1f1f1f;
-      --border:    #2a2a2a;
-      --border-mid:#383838;
-      --text:      #f4f4f5;
-      --text-sub:  #c4c4c8;
-      --text-muted:#8a8a90;
-      --accent:    #e11d48;   /* vermelho-japonês (hinomaru) */
-      --accent-2:  #be123c;
-      --positive:  #22c55e;
-      --warning:   #f59e0b;
-      --negative:  #ef4444;
-      --info:      #3b82f6;
+      --bg:        #f7f8fa;
+      --bg-card:   #ffffff;
+      --bg-elev:   #eef0f4;
+      --border:    #e0e3e9;
+      --border-mid:#cfd3db;
+      --text:      #111827;
+      --text-sub:  #374151;
+      --text-muted:#6b7280;
+      --accent:    #c90c38;   /* vermelho-japonês (hinomaru) */
+      --accent-2:  #a8052c;
+      --positive:  #15803d;
+      --warning:   #b45309;
+      --negative:  #b91c1c;
+      --info:      #1d4ed8;
       --radius:    16px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -74,7 +74,7 @@
       padding-top: calc(14px + env(safe-area-inset-top));
       padding-left: calc(16px + env(safe-area-inset-left));
       padding-right: calc(16px + env(safe-area-inset-right));
-      background: rgba(10,10,10,0.82);
+      background: rgba(247,248,250,0.94);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
     }
@@ -108,8 +108,8 @@
       border-radius: 12px; padding: 12px 14px; font-size: 13px;
       border: 1px solid; margin-bottom: 12px; line-height: 1.5;
     }
-    .notice.warn   { background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.3); color: #fcd34d; }
-    .notice.info   { background: rgba(59,130,246,0.08); border-color: rgba(59,130,246,0.3); color: #93c5fd; }
+    .notice.warn   { background: rgba(180,83,9,0.07); border-color: rgba(180,83,9,0.28); color: #7c2d12; }
+    .notice.info   { background: rgba(29,78,216,0.07); border-color: rgba(29,78,216,0.28); color: #1e3a8a; }
 
     /* ---------- Botões ---------- */
     .btn {
@@ -155,7 +155,7 @@
       transition: border-color .12s ease, background .12s ease;
     }
     .opt:hover { border-color: var(--text-muted); }
-    .opt.sel { border-color: var(--accent); background: rgba(225,29,72,0.1); }
+    .opt.sel { border-color: var(--accent); background: rgba(201,12,56,0.06); }
     .opt .dot {
       width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
       border: 2px solid var(--border-mid); position: relative;
@@ -259,13 +259,13 @@
       font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px;
       border: 1px solid;
     }
-    .where.city   { background: rgba(59,130,246,0.12);  color: #93c5fd; border-color: rgba(59,130,246,0.35); }   /* 市区町村 */
-    .where.tax    { background: rgba(168,85,247,0.12);  color: #d8b4fe; border-color: rgba(168,85,247,0.35); }   /* 税務署 */
-    .where.pension{ background: rgba(20,184,166,0.12);  color: #5eead4; border-color: rgba(20,184,166,0.35); }   /* 年金 */
-    .where.isa    { background: rgba(225,29,72,0.12);   color: #fda4af; border-color: rgba(225,29,72,0.35); }    /* imigração */
-    .where.self   { background: rgba(245,158,11,0.12);  color: #fcd34d; border-color: rgba(245,158,11,0.35); }   /* próprio */
-    .where.work   { background: rgba(34,197,94,0.12);   color: #86efac; border-color: rgba(34,197,94,0.35); }    /* empregador */
-    .where.home   { background: rgba(138,138,144,0.15); color: #c4c4c8; border-color: rgba(138,138,144,0.4); }   /* país de origem */
+    .where.city   { background: rgba(29,78,216,0.08);   color: #1e3a8a; border-color: rgba(29,78,216,0.28); }
+    .where.tax    { background: rgba(109,40,217,0.08);  color: #4c1d95; border-color: rgba(109,40,217,0.28); }
+    .where.pension{ background: rgba(13,148,136,0.08);  color: #0f5550; border-color: rgba(13,148,136,0.28); }
+    .where.isa    { background: rgba(185,28,28,0.08);   color: #7f1d1d; border-color: rgba(185,28,28,0.28); }
+    .where.self   { background: rgba(161,98,7,0.08);    color: #78350f; border-color: rgba(161,98,7,0.28); }
+    .where.work   { background: rgba(21,128,61,0.08);   color: #14532d; border-color: rgba(21,128,61,0.28); }
+    .where.home   { background: rgba(71,85,105,0.08);   color: #1e293b; border-color: rgba(71,85,105,0.28); }
 
     .yr {
       display: inline-flex; align-items: center;
@@ -295,7 +295,7 @@
 
     .callout {
       border-left: 3px solid var(--accent);
-      background: rgba(225,29,72,0.06);
+      background: rgba(201,12,56,0.04);
       border-radius: 0 10px 10px 0;
       padding: 11px 13px; font-size: 12.5px; line-height: 1.55;
       color: var(--text-sub); margin: 12px 0;
@@ -308,8 +308,8 @@
 
     .cat-badge {
       display: inline-block; font-size: 12px; font-weight: 700;
-      background: rgba(225,29,72,0.12); color: #fda4af;
-      border: 1px solid rgba(225,29,72,0.3);
+      background: rgba(201,12,56,0.07); color: #881337;
+      border: 1px solid rgba(201,12,56,0.22);
       padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
     }
     .back-link { font-size: 13px; color: var(--text-muted); text-decoration: none; }
@@ -437,6 +437,27 @@
      formal — mas estabilidade familiar e renda do núcleo seguem avaliadas.
      =================================================================== */
 
+  /* mapeamento choice-value → número para o motor de pontuação */
+  const CHOICE_NUMS = {
+    yearsInJapan:  { lt1: 0.5, "1to2": 1, "3to4": 3, "5to9": 5, "10to14": 10, gte15: 15 },
+    yearsStatus:   { lt1: 0, "1to4": 1, "5to9": 5, gte10: 10 },
+    marriageYears: { lt1: 0, "1to2": 1, gte3: 3 },
+    dependents:    { "0": 0, "1": 1, "2": 2, "3plus": 4 }
+  };
+  const CHOICE_LABELS = {
+    yearsInJapan:  { lt1: "menos de 1 ano", "1to2": "1–2 anos", "3to4": "3–4 anos", "5to9": "5–9 anos", "10to14": "10–14 anos", gte15: "15 anos ou mais" },
+    yearsStatus:   { lt1: "menos de 1 ano", "1to4": "1–4 anos", "5to9": "5–9 anos", gte10: "10 anos ou mais" },
+    marriageYears: { lt1: "menos de 1 ano", "1to2": "1–2 anos", gte3: "3 anos ou mais" }
+  };
+  function numVal(key, val) {
+    if (CHOICE_NUMS[key] && CHOICE_NUMS[key][val] != null) return CHOICE_NUMS[key][val];
+    return Number(val) || 0;
+  }
+  function choiceLabel(key, val) {
+    if (CHOICE_LABELS[key] && CHOICE_LABELS[key][val]) return CHOICE_LABELS[key][val];
+    return val;
+  }
+
   const CATEGORIES = {
     spouse_jp: {
       label: "Cônjuge de japonês",
@@ -552,9 +573,17 @@
     },
     {
       id: "yearsInJapan", section: "Residência",
-      text: "Há quantos anos você mora no Japão de forma contínua?",
-      hint: "Conte o tempo total de residência sem interrupções longas.",
-      type: "number", suffix: "anos no Japão", min: 0, max: 60
+      text: "Há quanto tempo você mora no Japão de forma contínua?",
+      hint: "Selecione o intervalo que melhor descreve seu tempo total de residência.",
+      type: "choice",
+      options: [
+        { v: "lt1",    t: "Menos de 1 ano" },
+        { v: "1to2",   t: "1 a 2 anos" },
+        { v: "3to4",   t: "3 a 4 anos" },
+        { v: "5to9",   t: "5 a 9 anos" },
+        { v: "10to14", t: "10 a 14 anos" },
+        { v: "gte15",  t: "15 anos ou mais" }
+      ]
     },
     {
       id: "absences", section: "Residência",
@@ -571,7 +600,13 @@
       id: "yearsStatus", section: "Residência",
       text: "Há quanto tempo possui o status de residência atual?",
       hint: "Para visto de trabalho, são exigidos 5+ anos com status de trabalho/residência.",
-      type: "number", suffix: "anos no status atual", min: 0, max: 60
+      type: "choice",
+      options: [
+        { v: "lt1",   t: "Menos de 1 ano" },
+        { v: "1to4",  t: "1 a 4 anos" },
+        { v: "5to9",  t: "5 a 9 anos" },
+        { v: "gte10", t: "10 anos ou mais" }
+      ]
     },
     {
       id: "excludedStatus", section: "Residência",
@@ -600,7 +635,12 @@
       id: "marriageYears", section: "Família",
       text: "Há quanto tempo você está casado(a)?",
       hint: "Para cônjuges, exige-se 3+ anos de casamento contínuo.",
-      type: "number", suffix: "anos de casamento", min: 0, max: 60,
+      type: "choice",
+      options: [
+        { v: "lt1",  t: "Menos de 1 ano" },
+        { v: "1to2", t: "1 a 2 anos" },
+        { v: "gte3", t: "3 anos ou mais" }
+      ],
       showIf: (a) => ["spouse_jp", "spouse_pr"].includes(a.category)
     },
     {
@@ -628,7 +668,13 @@
       id: "dependents", section: "Finanças",
       text: "Quantos dependentes (扶養) você sustenta?",
       hint: "Quanto mais dependentes, maior a renda esperada para comprovar independência.",
-      type: "number", suffix: "dependentes", min: 0, max: 15
+      type: "choice",
+      options: [
+        { v: "0",     t: "Nenhum" },
+        { v: "1",     t: "1 pessoa" },
+        { v: "2",     t: "2 pessoas" },
+        { v: "3plus", t: "3 ou mais" }
+      ]
     },
     {
       id: "stableJob", section: "Finanças",
@@ -639,6 +685,17 @@
         { v: "yes",   t: "Sim, estável e contínua" },
         { v: "partly", t: "Parcialmente / temporária" },
         { v: "no",    t: "Não tenho renda estável" }
+      ]
+    },
+    {
+      id: "privateDebt", section: "Finanças",
+      text: "Você possui dívidas não pagas de valor significativo?",
+      hint: "Ex.: conta de hospital, empréstimo bancário. Não é critério formal oficial, mas pode ser considerado na avaliação de independência financeira (独立生計).",
+      type: "choice",
+      options: [
+        { v: "no",    t: "Não tenho dívidas significativas" },
+        { v: "small", t: "Apenas dívidas pequenas", s: "parcelamentos normais" },
+        { v: "yes",   t: "Sim, tenho dívidas relevantes não pagas" }
       ]
     },
     {
@@ -950,20 +1007,28 @@
     {
       id: "guarantor",
       title: "🤝 Documentos do garantidor (身元保証人)",
-      sub: "Além da carta de garantia, o fiador anexa os documentos dele.",
+      sub: "Além da carta de garantia (身元保証書), o fiador apresenta os documentos abaixo. Se o fiador for seu cônjuge japonês(a), esses documentos podem coincidir com outros já solicitados.",
       docs: [
         {
           name: "Atestado de residência do fiador",
           jp: "身元保証人の住民票",
           where: "city", years: "≤ 3 meses",
-          note: "Tirado pelo próprio garantidor na prefeitura dele.",
+          note: "Tirado pelo próprio garantidor na prefeitura. Se o fiador for seu cônjuge, este atestado também comprova coabitação.",
           dl: []
         },
         {
           name: "Comprovante de profissão e renda do fiador",
           jp: "在職証明書・課税（所得）証明書",
           where: "city", years: "1 ano",
-          note: "Comprova que o fiador tem condições. Renda dele = prefeitura; emprego = empregador.",
+          note: "Comprova que o fiador tem condições financeiras. 課税証明書 = prefeitura; 在職証明書 = empregador. Se o fiador for sua esposa, solicite os dois no nome dela.",
+          dl: []
+        },
+        {
+          name: "Prova de cidadania japonesa do fiador (cônjuge japonês)",
+          jp: "戸籍謄本（身元保証人が日本人配偶者の場合）",
+          where: "city", years: "≤ 3 meses",
+          note: "Se o garantidor for seu cônjuge japonês(a): a 戸籍謄本 comprova a cidadania japonesa e o vínculo matrimonial. Pode ser o mesmo documento já solicitado na seção 'Vínculo familiar'.",
+          catOnly: ["spouse_jp"],
           dl: []
         }
       ]
@@ -1139,16 +1204,17 @@
 
       // ---- 1) TEMPO DE RESIDÊNCIA (peso alto: 25) ----
       const needRes = cat.residenceYears;
-      const haveRes = Number(a.yearsInJapan) || 0;
+      const haveRes = numVal('yearsInJapan', a.yearsInJapan);
+      const haveResLabel = choiceLabel('yearsInJapan', a.yearsInJapan);
       if (haveRes >= needRes) {
         add(`Tempo de residência (≥ ${needRes} anos)`, 25, 25, "ok",
-          `Tempo de residência compatível: ${haveRes} anos (exigido ${needRes} para ${cat.label}).`);
+          `Tempo de residência compatível: ${haveResLabel} (exigido ${needRes} ano(s) para ${cat.label}).`);
       } else if (haveRes >= needRes * 0.7) {
         add(`Tempo de residência (≥ ${needRes} anos)`, 12, 25, "warn",
-          `Tempo de residência quase suficiente: ${haveRes} de ${needRes} anos exigidos.`);
+          `Tempo de residência quase suficiente: ${haveResLabel} de ${needRes} anos exigidos.`);
       } else {
         add(`Tempo de residência (≥ ${needRes} anos)`, 4, 25, "bad",
-          `Tempo de residência abaixo do exigido: ${haveRes} de ${needRes} anos para ${cat.label}.`);
+          `Tempo de residência abaixo do exigido: ${haveResLabel} (precisa ${needRes} ano(s) para ${cat.label}).`);
       }
 
       // ---- 1a-2) STATUS EXCLUÍDO (技能実習 / 特定技能1号) — não contam ----
@@ -1169,13 +1235,14 @@
 
       // ---- 1b) CASAMENTO (cônjuges) — peso alto na categoria (15) ----
       if (["spouse_jp", "spouse_pr"].includes(a.category)) {
-        const m = Number(a.marriageYears) || 0;
+        const m = numVal('marriageYears', a.marriageYears);
+        const mLabel = choiceLabel('marriageYears', a.marriageYears);
         if (m >= cat.marriageYears) {
           add(`Casamento ≥ ${cat.marriageYears} anos`, 15, 15, "ok",
-            `Tempo de casamento compatível: ${m} anos (exigido ${cat.marriageYears}).`);
+            `Tempo de casamento compatível: ${mLabel} (exigido ${cat.marriageYears} ano(s)).`);
         } else {
           add(`Casamento ≥ ${cat.marriageYears} anos`, 5, 15, "bad",
-            `Casamento ainda abaixo do exigido: ${m} de ${cat.marriageYears} anos.`);
+            `Casamento ainda abaixo do exigido: ${mLabel} — precisa de ${cat.marriageYears} anos.`);
         }
         // coabitação
         if (a.livingTogether === "yes") {
@@ -1187,13 +1254,14 @@
 
       // ---- 1c) TEMPO NO STATUS DE TRABALHO (categorias gerais) ----
       if (cat.workYears) {
-        const ys = Number(a.yearsStatus) || 0;
+        const ys = numVal('yearsStatus', a.yearsStatus);
+        const ysLabel = choiceLabel('yearsStatus', a.yearsStatus);
         if (ys >= cat.workYears) {
           add(`≥ ${cat.workYears} anos no status de trabalho`, 10, 10, "ok",
-            `Tempo no status atual compatível: ${ys} anos (exigido ${cat.workYears}).`);
+            `Tempo no status atual compatível: ${ysLabel} (exigido ${cat.workYears} ano(s)).`);
         } else {
           add(`≥ ${cat.workYears} anos no status de trabalho`, 3, 10, "warn",
-            `Tempo no status de trabalho abaixo de ${cat.workYears} anos (${ys} anos).`);
+            `Tempo no status de trabalho abaixo de ${cat.workYears} anos (${ysLabel}).`);
         }
       }
 
@@ -1261,7 +1329,7 @@
       const incMap = { lt2: 0.15, "2to3": 0.45, "3to4": 0.75, "4to6": 0.95, gt6: 1 };
       let incFactor = incMap[a.income] != null ? incMap[a.income] : 0.5;
       // ajuste por dependentes: cada dependente reduz um pouco o fator
-      const dep = Number(a.dependents) || 0;
+      const dep = numVal('dependents', a.dependents);
       incFactor = Math.max(0.1, incFactor - dep * 0.08);
       incScore = Math.round(finWeightMax * incFactor);
       if (incFactor >= 0.7) {
@@ -1282,6 +1350,16 @@
         add("Estabilidade de emprego/renda", 3, 6, "warn", "Renda parcial/temporária — estabilidade pode ser questionada.");
       } else {
         add("Estabilidade de emprego/renda", 0, 6, "bad", "Sem renda estável — afeta o requisito de subsistência.");
+      }
+
+      // ---- 4c) dívidas privadas (peso: 4 — não é critério formal, mas avaliado) ----
+      if (a.privateDebt === "no") {
+        add("Ausência de dívidas privadas relevantes", 4, 4, "ok", "Sem dívidas privadas significativas.");
+      } else if (a.privateDebt === "small") {
+        add("Ausência de dívidas privadas relevantes", 3, 4, "ok", "Apenas pequenas dívidas — dentro do normal.");
+      } else if (a.privateDebt === "yes") {
+        add("Ausência de dívidas privadas relevantes", 0, 4, "warn",
+          "Dívidas privadas relevantes não pagas (ex.: hospital, empréstimo) podem ser consideradas na avaliação de independência financeira — não é critério formal oficial, mas pode impactar a análise.");
       }
 
       // ---- 5) BOA CONDUTA (peso alto: 18; reduzido p/ cônjuge/filho) ----
@@ -1631,11 +1709,10 @@
   function show(id, on) { document.getElementById(id).classList.toggle("hide", !on); }
   function stripTags(s) { return String(s).replace(/<[^>]*>/g, ""); }
   function hexBg(varColor) {
-    // fundo translúcido a partir da cor do veredito
     const map = {
-      "var(--positive)": "rgba(34,197,94,0.1)",
-      "var(--warning)":  "rgba(245,158,11,0.1)",
-      "var(--negative)": "rgba(239,68,68,0.1)"
+      "var(--positive)": "rgba(21,128,61,0.07)",
+      "var(--warning)":  "rgba(180,83,9,0.07)",
+      "var(--negative)": "rgba(185,28,28,0.07)"
     };
     return map[varColor] || "var(--bg-elev)";
   }
