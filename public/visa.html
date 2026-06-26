@@ -35,22 +35,45 @@
       --radius:    16px;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-    html, body { margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; overflow-x: hidden; width: 100%; }
     body {
       font-family: 'Plus Jakarta Sans', 'Noto Sans JP', system-ui, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
       min-height: 100vh;
+      min-height: 100dvh;
       -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
     }
-    .wrap { max-width: 640px; margin: 0 auto; padding: 16px 16px 64px; }
+    .wrap {
+      max-width: 640px; margin: 0 auto;
+      padding: 16px 16px calc(64px + env(safe-area-inset-bottom));
+    }
+    /* telas pequenas (≤360px): aperta paddings e fontes */
+    @media (max-width: 360px) {
+      .wrap { padding-left: 12px; padding-right: 12px; }
+      .card { padding: 15px; }
+      .qtext { font-size: 17px; }
+      .score-ring { width: 150px; height: 150px; }
+      .score-ring .pct { font-size: 38px; }
+    }
+    /* respeita quem prefere menos animação */
+    @media (prefers-reduced-motion: reduce) {
+      * { animation: none !important; transition: none !important; }
+    }
 
     /* ---------- Cabeçalho fixo ---------- */
     .topbar {
       position: sticky; top: 0; z-index: 30;
       display: flex; align-items: center; gap: 10px;
       padding: 14px 16px;
+      padding-top: calc(14px + env(safe-area-inset-top));
+      padding-left: calc(16px + env(safe-area-inset-left));
+      padding-right: calc(16px + env(safe-area-inset-right));
       background: rgba(10,10,10,0.82);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
@@ -473,6 +496,15 @@
       exemptConductFinance: false,
       note: "Profissional altamente qualificado com 70+ pontos: 3+ anos de residência."
     },
+    refugee: {
+      label: "Refugiado reconhecido",
+      jp: "難民認定者",
+      residenceYears: 5,             // 5 anos contínuos após reconhecimento
+      marriageYears: 0,
+      exemptFinanceOnly: true,       // (2) independência pode ser dispensada
+      exemptConductFinance: false,
+      note: "Refugiado reconhecido: 5+ anos contínuos. O requisito de independência financeira pode ser dispensado."
+    },
     work: {
       label: "Visto de trabalho",
       jp: "就労資格",
@@ -480,7 +512,8 @@
       workYears: 5,                  // dos quais 5 com status de trabalho/residência
       marriageYears: 0,
       exemptConductFinance: false,
-      note: "Regra geral: 10 anos no Japão, sendo 5+ com status de trabalho."
+      checkExcludedStatus: true,     // 技能実習 e 特定技能1号 NÃO contam
+      note: "Regra geral: 10 anos no Japão, sendo 5+ com status de trabalho (技能実習 e 特定技能1号 NÃO contam)."
     },
     other: {
       label: "Outro status",
@@ -505,11 +538,12 @@
       hint: "Os requisitos do visto permanente mudam conforme a sua categoria.",
       type: "choice",
       options: [
-        { v: "spouse_jp",  t: "Cônjuge de japonês", s: "日本人の配偶者" },
+        { v: "spouse_jp",  t: "Cônjuge de japonês / perm. especial", s: "日本人・特別永住者の配偶者" },
         { v: "spouse_pr",  t: "Cônjuge de residente permanente", s: "永住者の配偶者" },
-        { v: "child_jp",   t: "Filho(a) de japonês", s: "日本人の実子" },
+        { v: "child_jp",   t: "Filho(a) de japonês / perm. especial", s: "日本人・特別永住者の実子" },
         { v: "child_pr",   t: "Filho(a) de residente permanente", s: "永住者の実子" },
         { v: "long_term",  t: "Long-Term Resident", s: "定住者" },
+        { v: "refugee",    t: "Refugiado reconhecido", s: "難民認定者" },
         { v: "hsp80",      t: "Highly Skilled Professional — 80 pts", s: "高度専門職 80点" },
         { v: "hsp70",      t: "Highly Skilled Professional — 70 pts", s: "高度専門職 70点" },
         { v: "work",       t: "Visto de trabalho", s: "就労ビザ" },
@@ -523,10 +557,32 @@
       type: "number", suffix: "anos no Japão", min: 0, max: 60
     },
     {
+      id: "absences", section: "Residência",
+      text: "Nos últimos anos, você saiu do Japão por períodos longos?",
+      hint: "A Imigração pode considerar QUEBRADA a continuidade se você ficou fora ~90+ dias de uma vez, ou ~100+ dias somados num ano.",
+      type: "choice",
+      options: [
+        { v: "none", t: "Não, sempre fiquei no Japão", s: "viagens curtas apenas" },
+        { v: "some", t: "Viagens de algumas semanas", s: "abaixo de 90 dias" },
+        { v: "long", t: "Já fiquei 90+ dias fora de uma vez", s: "pode quebrar a continuidade" }
+      ]
+    },
+    {
       id: "yearsStatus", section: "Residência",
       text: "Há quanto tempo possui o status de residência atual?",
       hint: "Para visto de trabalho, são exigidos 5+ anos com status de trabalho/residência.",
       type: "number", suffix: "anos no status atual", min: 0, max: 60
+    },
+    {
+      id: "excludedStatus", section: "Residência",
+      text: "Seu status atual é Estágio Técnico (技能実習) ou Trabalhador Especializado nº1 (特定技能1号)?",
+      hint: "Esses dois status NÃO contam para o requisito de 5 anos de trabalho nem para os 10 anos. É uma regra explícita da Imigração.",
+      type: "choice",
+      options: [
+        { v: "no",  t: "Não, é outro status de trabalho", s: "ex.: 技術・人文知識・国際業務" },
+        { v: "yes", t: "Sim, 技能実習 ou 特定技能1号", s: "não conta para o permanente" }
+      ],
+      showIf: (a) => ["work", "other"].includes(a.category)
     },
     {
       id: "visaPeriod", section: "Visto atual",
@@ -1095,6 +1151,22 @@
           `Tempo de residência abaixo do exigido: ${haveRes} de ${needRes} anos para ${cat.label}.`);
       }
 
+      // ---- 1a-2) STATUS EXCLUÍDO (技能実習 / 特定技能1号) — não contam ----
+      if (cat.checkExcludedStatus && a.excludedStatus === "yes") {
+        add("Status que conta para o permanente", 0, 14, "bad",
+          "技能実習 e 特定技能1号 NÃO contam para os 5/10 anos exigidos. É preciso mudar para um status válido e acumular o tempo nele.");
+      }
+
+      // ---- 1a-3) CONTINUIDADE DE RESIDÊNCIA (ausências) — peso: 10 ----
+      if (a.absences === "none") {
+        add("Continuidade de residência", 10, 10, "ok", "Residência contínua sem ausências longas.");
+      } else if (a.absences === "some") {
+        add("Continuidade de residência", 8, 10, "ok", "Viagens curtas não costumam quebrar a continuidade.");
+      } else if (a.absences === "long") {
+        add("Continuidade de residência", 2, 10, "bad",
+          "Ausências de 90+ dias (ou 100+ dias somados num ano) podem ZERAR a contagem de residência contínua — confirme com um especialista.");
+      }
+
       // ---- 1b) CASAMENTO (cônjuges) — peso alto na categoria (15) ----
       if (["spouse_jp", "spouse_pr"].includes(a.category)) {
         const m = Number(a.marriageYears) || 0;
@@ -1126,13 +1198,18 @@
       }
 
       // ---- 2) PRAZO DO VISTO ATUAL (peso importante: 12) ----
-      // Exige-se estar no maior prazo previsto (na prática, 3 ou 5 anos).
-      if (a.visaPeriod === "5" || a.visaPeriod === "3") {
+      // Regra oficial: estar no MAIOR prazo previsto para o status (別表第2).
+      // Para a maioria dos status de trabalho o máximo é 5 anos; 3 anos NÃO é
+      // o maior e, com a revisão de 2026, isso passou a ser cobrado com rigor.
+      if (a.visaPeriod === "5") {
         add("Prazo do visto (mais longo)", 12, 12, "ok",
-          `Prazo de visto adequado (${a.visaPeriod} anos) — atende ao requisito do maior prazo.`);
+          "Visto de 5 anos — atende ao requisito do maior prazo de permanência.");
+      } else if (a.visaPeriod === "3") {
+        add("Prazo do visto (mais longo)", 8, 12, "warn",
+          "Visto de 3 anos: na prática era aceito, mas a regra pede o MAIOR prazo (geralmente 5 anos). Confirme qual é o máximo do seu status — a revisão de 2026 reforçou isso.");
       } else if (a.visaPeriod === "1") {
-        add("Prazo do visto (mais longo)", 4, 12, "warn",
-          "Visto de 1 ano pode ser insuficiente — exige-se o maior prazo previsto para o status.");
+        add("Prazo do visto (mais longo)", 3, 12, "bad",
+          "Visto de 1 ano costuma ser insuficiente — exige-se o maior prazo previsto para o status.");
       } else {
         add("Prazo do visto (mais longo)", 6, 12, "warn",
           "Verifique se o seu visto está no maior prazo previsto para o seu status.");
@@ -1177,8 +1254,9 @@
       }
 
       // ---- 4) INDEPENDÊNCIA FINANCEIRA (peso alto: 18) ----
-      // Para cônjuges/filhos, (2) é dispensado como formal → peso reduzido.
-      const finWeightMax = cat.exemptConductFinance ? 9 : 18;
+      // Cônjuges/filhos: (2) dispensado como formal → peso reduzido.
+      // Refugiado: (2) pode ser dispensado → peso reduzido também.
+      const finWeightMax = (cat.exemptConductFinance || cat.exemptFinanceOnly) ? 9 : 18;
       let incScore;
       const incMap = { lt2: 0.15, "2to3": 0.45, "3to4": 0.75, "4to6": 0.95, gt6: 1 };
       let incFactor = incMap[a.income] != null ? incMap[a.income] : 0.5;
@@ -1260,6 +1338,9 @@
         vsub = "A análise indica que faltam bases importantes. Reavalie com um gyoseishoshi.";
         vcolor = "var(--negative)"; ringColor = "var(--negative)";
       }
+
+      // guarda os dados para o botão "copiar resultado"
+      this.resultData = { cat, finalPct, verdict, met, attention, problems, weights };
 
       // ----- DOCUMENTOS: monta a lista detalhada e filtrada -----
       const a2 = this.answers;
@@ -1371,9 +1452,9 @@
         </div>
 
         <!-- CARD: renda em detalhe -->
-        <div class=”card fade”>
-          <div class=”sect-title”>💴 Sobre a renda — o que a Imigração avalia</div>
-          <div class=”callout”>
+        <div class="card fade">
+          <div class="sect-title">💴 Sobre a renda — o que a Imigração avalia</div>
+          <div class="callout">
             <b>Não existe um valor mínimo fixo na lei.</b> A Imigração avalia se você consegue
             se sustentar <em>sem se tornar um encargo público</em>. Na prática, despachantes e
             consultores citam <b>¥3.000.000/ano</b> como referência comum para vistos de trabalho
@@ -1381,25 +1462,25 @@
             empregatício. Uma renda menor com emprego estável e histórico longo pode pesar mais do
             que uma renda alta recente.
           </div>
-          <ul class=”list”>
-            <li class=”warn”><span class=”ic”>⚠️</span><span class=”tx”>
+          <ul class="list">
+            <li class="warn"><span class="ic">⚠️</span><span class="tx">
               <b>Com dependentes:</b> a renda exigida sobe. Não há tabela oficial, mas cada
               dependente aumenta o que a Imigração espera ver comprovado.
             </span></li>
-            <li class=”ok”><span class=”ic”>✅</span><span class=”tx”>
+            <li class="ok"><span class="ic">✅</span><span class="tx">
               <b>Documentos-chave de renda:</b> 源泉徴収票 (retido em fonte), holerites recentes,
               e 課税証明書 da prefeitura (que mostra a renda tributável).
             </span></li>
-            <li class=”ok”><span class=”ic”>✅</span><span class=”tx”>
+            <li class="ok"><span class="ic">✅</span><span class="tx">
               <b>Reservas bancárias</b> (預貯金通帳) reforçam a prova mesmo sem renda alta.
             </span></li>
           </ul>
         </div>
 
         <!-- CARD: 了解書 — formulário de consentimento (o “pré-formulário” mencionado) -->
-        <div class=”card fade”>
-          <div class=”sect-title”>📜 O formulário que declara o histórico de pagamentos</div>
-          <div class=”callout”>
+        <div class="card fade">
+          <div class="sect-title">📜 O formulário que declara o histórico de pagamentos</div>
+          <div class="callout">
             Desde <b>outubro de 2021</b>, a Imigração exige a <b>了解書 (Termo de Consentimento)</b>
             obrigatório. Você declara ter ciência de que impostos, pensão e seguro saúde devem
             estar pagos <b>dentro do prazo</b> — e que o visto permanente pode ser
@@ -1408,17 +1489,17 @@
             É neste documento que fica registrado que você <b>entende e concorda</b> com as
             regras. O formulário está disponível em português. Baixe, leia com atenção e assine.
           </div>
-          <div class=”dl-row”>
-            <a class=”dl” href=”${ISA}001356131.pdf” target=”_blank” rel=”noopener” download>⬇ Baixar em Português</a>
-            <a class=”dl alt” href=”${ISA}001355579.pdf” target=”_blank” rel=”noopener” download>⬇ 日本語版</a>
-            <a class=”dl alt” href=”${ISA}001356126.pdf” target=”_blank” rel=”noopener” download>⬇ English</a>
+          <div class="dl-row">
+            <a class="dl" href="${ISA}001356131.pdf" target="_blank" rel="noopener" download>⬇ Baixar em Português</a>
+            <a class="dl alt" href="${ISA}001355579.pdf" target="_blank" rel="noopener" download>⬇ 日本語版</a>
+            <a class="dl alt" href="${ISA}001356126.pdf" target="_blank" rel="noopener" download>⬇ English</a>
           </div>
         </div>
 
         <!-- CARD: idioma japonês -->
-        <div class=”card fade”>
-          <div class=”sect-title”>🇯🇵 Sobre o conhecimento de japonês</div>
-          <div class=”callout”>
+        <div class="card fade">
+          <div class="sect-title">🇯🇵 Sobre o conhecimento de japonês</div>
+          <div class="callout">
             O idioma japonês <b>não é um requisito formal geral</b> para o visto permanente, ao
             contrário da naturalização (帰化). A Imigração não exige certificado de proficiência
             (JLPT) para o permanente.
@@ -1431,38 +1512,43 @@
         </div>
 
         <!-- CARD: documentos detalhados com origem -->
-        <div class=”card fade”>
-          <div class=”sect-title”>📄 Documentos para reunir — onde cada um é obtido</div>
-          <p class=”muted” style=”margin-bottom:12px;”>
+        <div class="card fade">
+          <div class="sect-title">📄 Documentos para reunir — onde cada um é obtido</div>
+          <p class="muted" style="margin-bottom:12px;">
             Filtramos abaixo conforme as suas respostas. Cores indicam a instituição responsável.
           </p>
-          <div class=”legend”>${legendHtml}</div>
-          <div class=”callout” style=”margin-bottom:16px;”>
+          <div class="legend">${legendHtml}</div>
+          <div class="callout" style="margin-bottom:16px;">
             ⚠️ <b>Atenção ao “納税証明書”:</b> existem dois documentos com esse nome — um da
             <b>prefeitura</b> (住民税, imposto municipal) e um da <b>receita nacional (税務署)</b>
             (impostos federais / その３). Os dois podem ser exigidos e <b>não são intercambiáveis</b>.
           </div>
           ${groupsHtml}
-          <div class=”dl-row” style=”margin-top:14px;”>
-            <a class=”dl alt” href=”${PROC_URL}” target=”_blank” rel=”noopener”>🔗 Página oficial ISA (procedimento)</a>
+          <div class="dl-row" style="margin-top:14px;">
+            <a class="dl alt" href="${PROC_URL}" target="_blank" rel="noopener">🔗 Página oficial ISA (procedimento)</a>
           </div>
         </div>
 
-        <div class=”card fade”>
-          <div class=”btn-row”>
-            <button class=”btn btn-ghost btn-sm” onclick=”App.start()”>↻ Refazer análise</button>
-            <button class=”btn btn-primary btn-sm” onclick=”App.goIntro()”>Início</button>
+        <div class="card fade">
+          <div class="sect-title">📤 Compartilhar resultado</div>
+          <p class="muted" style="margin-bottom:12px;">
+            Copie um resumo (o que você cumpre e o que falta) para colar no WhatsApp e enviar a alguém.
+          </p>
+          <button class="btn btn-primary" id="copy-btn" onclick="App.copyResult()">📋 Copiar resultado</button>
+          <div class="btn-row" style="margin-top:10px;">
+            <button class="btn btn-ghost btn-sm" onclick="App.start()">↻ Refazer análise</button>
+            <button class="btn btn-ghost btn-sm" onclick="App.goIntro()">🏠 Início</button>
           </div>
         </div>
 
-        <div class=”legal”>
+        <div class="legal">
           <b>Esta ferramenta oferece apenas uma estimativa</b> baseada em requisitos
           públicos da Imigração Japonesa. Ela <b>não garante aprovação</b> do visto
           permanente. A decisão final pertence à <b>Immigration Services Agency of
           Japan (出入国在留管理庁)</b>. Para casos específicos, consulte um advogado,
           <b>gyoseishoshi (行政書士)</b> ou especialista em imigração.<br><br>
           Fontes: “永住許可に関するガイドライン” (revisão 令和8年/2026) ·
-          <a href=”${PROC_URL}” target=”_blank” rel=”noopener”>永住許可申請 — ISA</a> ·
+          <a href="${PROC_URL}" target="_blank" rel="noopener">永住許可申請 — ISA</a> ·
           “Permission for permanent residence (Immigration Control Act, Article 22)”.
         </div>
       `;
@@ -1479,11 +1565,71 @@
       show("screen-quiz", false);
       show("screen-intro", true);
       window.scrollTo(0, 0);
+    },
+
+    /* monta o texto-resumo (estilo WhatsApp) a partir do resultado */
+    buildSummaryText() {
+      const d = this.resultData;
+      if (!d) return "";
+      const L = [];
+      L.push("🗾 *Análise de Visto Permanente (Japão)*");
+      L.push(`Categoria: ${d.cat.label} (${d.cat.jp})`);
+      L.push(`Resultado: *${d.finalPct}%* dos critérios`);
+      L.push(`Avaliação: ${d.verdict}`);
+      L.push("");
+      if (d.met.length) {
+        L.push("✅ *Requisitos cumpridos:*");
+        d.met.forEach(m => L.push(`• ${stripTags(m)}`));
+        L.push("");
+      }
+      if (d.attention.length) {
+        L.push("⚠️ *Pontos de atenção:*");
+        d.attention.forEach(m => L.push(`• ${stripTags(m)}`));
+        L.push("");
+      }
+      if (d.problems.length) {
+        L.push("⛔ *Pontos problemáticos:*");
+        d.problems.forEach(m => L.push(`• ${stripTags(m)}`));
+        L.push("");
+      }
+      L.push("ℹ️ Estimativa baseada nos requisitos públicos da Imigração do Japão (出入国在留管理庁). NÃO garante aprovação — a decisão é da Imigração. Consulte um gyoseishoshi (行政書士).");
+      L.push("");
+      L.push("Feito com: " + location.href);
+      return L.join("\n");
+    },
+
+    /* copia o resumo para a área de transferência (com fallback) */
+    async copyResult() {
+      const text = this.buildSummaryText();
+      const btn = document.getElementById("copy-btn");
+      const done = (ok) => {
+        if (!btn) return;
+        btn.textContent = ok ? "✅ Copiado! Cole no WhatsApp" : "⚠️ Não foi possível copiar";
+        btn.style.background = ok ? "var(--positive)" : "var(--warning)";
+        setTimeout(() => { btn.textContent = "📋 Copiar resultado"; btn.style.background = ""; }, 2500);
+      };
+      try {
+        if (navigator.clipboard && window.isSecureContext) {
+          await navigator.clipboard.writeText(text);
+          done(true);
+        } else {
+          // fallback para navegadores antigos / contexto não seguro
+          const ta = document.createElement("textarea");
+          ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.focus(); ta.select();
+          const ok = document.execCommand("copy");
+          document.body.removeChild(ta);
+          done(ok);
+        }
+      } catch (e) {
+        done(false);
+      }
     }
   };
 
   /* utilidades */
   function show(id, on) { document.getElementById(id).classList.toggle("hide", !on); }
+  function stripTags(s) { return String(s).replace(/<[^>]*>/g, ""); }
   function hexBg(varColor) {
     // fundo translúcido a partir da cor do veredito
     const map = {
