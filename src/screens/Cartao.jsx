@@ -1,8 +1,7 @@
 import { useState } from "react";
-import { Card, SectionLabel, BottomSheet, MonthPicker } from "../components/ui.jsx";
+import { Card, BottomSheet, MonthPicker } from "../components/ui.jsx";
 import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 
-// ── helpers ────────────────────────────────────────────────────────────────────
 function nanoid() {
   return Math.random().toString(36).slice(2, 10);
 }
@@ -12,21 +11,20 @@ function todayStr() {
 }
 
 const CATS = [
-  { id: "mercado_jp",  label: "Mercado JP",    icon: "🏬" },
-  { id: "mercado_br",  label: "Mercado BR",    icon: "🛒" },
-  { id: "restaurante", label: "Restaurante",   icon: "🍜" },
-  { id: "konbini",     label: "Konbini",       icon: "🏪" },
-  { id: "combustivel", label: "Combustível",   icon: "⛽" },
-  { id: "online",      label: "Online/Amazon", icon: "🌐" },
-  { id: "farmacia",    label: "Farmácia",      icon: "💊" },
-  { id: "homecenter",  label: "HomeCenter",    icon: "🔨" },
-  { id: "outro",       label: "Outro",         icon: "📌" },
+  { id: "mercado_jp", label: "Mercado JP", icon: "🏬" },
+  { id: "mercado_br", label: "Mercado BR", icon: "🛒" },
+  { id: "restaurante", label: "Restaurante", icon: "🍜" },
+  { id: "konbini", label: "Konbini", icon: "🏪" },
+  { id: "combustivel", label: "Combustível", icon: "⛽" },
+  { id: "online", label: "Online/Amazon", icon: "🌐" },
+  { id: "farmacia", label: "Farmácia", icon: "💊" },
+  { id: "homecenter", label: "HomeCenter", icon: "🔨" },
+  { id: "outro", label: "Outro", icon: "📌" },
 ];
 
-// Old entries with "supermercado" (created before split) default to mercado_jp
 const LEGACY_MAP = {
   supermercado: "mercado_jp",
-  posto:        "combustivel",
+  posto: "combustivel",
 };
 
 function getCat(id) {
@@ -34,23 +32,52 @@ function getCat(id) {
   return CATS.find(c => c.id === mapped) || CATS[CATS.length - 1];
 }
 
-// ── default setup shape ────────────────────────────────────────────────────────
 function defaultSetup() {
   return { name: "Cartão", closingDay: 15, dueDay: 11, limit: 0 };
 }
 
-// ── Cartao Screen ──────────────────────────────────────────────────────────────
+function buildCopyText({ setup, month, lancamentos, total, catBreakdown }) {
+  const lines = [];
+  lines.push("DADOS DO CARTÃO - JAPANFINANCE");
+  lines.push(`Cartão: ${setup.name || "Cartão"}`);
+  lines.push(`Mês selecionado no app: ${month}`);
+  lines.push(`Fechamento configurado: dia ${setup.closingDay || 15}`);
+  lines.push(`Vencimento configurado: dia ${setup.dueDay || 11}`);
+  lines.push(`Total mostrado no app: ${YEN(total)}`);
+  lines.push("");
+  lines.push("Resumo por categoria:");
+  if (catBreakdown.length === 0) {
+    lines.push("- Nenhum gasto no mês selecionado");
+  } else {
+    for (const { id, amt } of catBreakdown) {
+      lines.push(`- ${getCat(id).label}: ${YEN(amt)}`);
+    }
+  }
+  lines.push("");
+  lines.push("Lançamentos:");
+  if (lancamentos.length === 0) {
+    lines.push("- Nenhum lançamento no mês selecionado");
+  } else {
+    const ordered = [...lancamentos].sort((a, b) => a.date.localeCompare(b.date));
+    for (const l of ordered) {
+      lines.push(`- ${l.date} | ${getCat(l.cat).label} | ${YEN(l.amount)}`);
+    }
+  }
+  lines.push("");
+  lines.push("Observação: estes são os lançamentos cadastrados no JapanFinance para o mês selecionado, ainda sem separação manual por fatura do banco.");
+  return lines.join("\n");
+}
+
 export function Cartao({ extras, setExtras }) {
   const [month, setMonth] = useState(currentMonth());
-  const [entryModal, setEntryModal] = useState(null); // null | { id?, date, amount, cat }
+  const [entryModal, setEntryModal] = useState(null);
   const [setupModal, setSetupModal] = useState(false);
   const [setupDraft, setSetupDraft] = useState(null);
+  const [copied, setCopied] = useState(false);
 
-  // ── derived data ───────────────────────────────────────────────────────────
   const setup = extras?.cartao?.setup || defaultSetup();
   const allLancamentos = extras?.cartao?.lancamentos || [];
 
-  // filter to selected month
   const lancamentos = allLancamentos
     .filter(l => l.date && l.date.startsWith(month))
     .sort((a, b) => b.date.localeCompare(a.date));
@@ -59,7 +86,6 @@ export function Cartao({ extras, setExtras }) {
   const limit = setup.limit || 0;
   const limitPct = limit > 0 ? Math.min(100, (total / limit) * 100) : 0;
 
-  // category breakdown
   const catTotals = {};
   for (const l of lancamentos) {
     catTotals[l.cat] = (catTotals[l.cat] || 0) + (l.amount || 0);
@@ -68,7 +94,17 @@ export function Cartao({ extras, setExtras }) {
     .map(([id, amt]) => ({ id, amt }))
     .sort((a, b) => b.amt - a.amt);
 
-  // ── mutators ───────────────────────────────────────────────────────────────
+  async function copyResumo() {
+    const text = buildCopyText({ setup, month, lancamentos, total, catBreakdown });
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      alert(text);
+    }
+  }
+
   function saveEntry() {
     if (!entryModal) return;
     const amount = parseFloat(String(entryModal.amount).replace(/[^0-9.]/g, "")) || 0;
@@ -87,10 +123,7 @@ export function Cartao({ extras, setExtras }) {
       const updated = idx !== -1
         ? existing.map((l, i) => (i === idx ? entry : l))
         : [...existing, entry];
-      return {
-        ...prev,
-        cartao: { ...cartao, lancamentos: updated },
-      };
+      return { ...prev, cartao: { ...cartao, lancamentos: updated } };
     });
     setEntryModal(null);
   }
@@ -130,62 +163,41 @@ export function Cartao({ extras, setExtras }) {
       dueDay: parseInt(setupDraft.dueDay) || 11,
       limit: parseFloat(String(setupDraft.limit).replace(/[^0-9.]/g, "")) || 0,
     };
-    setExtras(prev => ({
-      ...prev,
-      cartao: { ...(prev?.cartao || {}), setup: s },
-    }));
+    setExtras(prev => ({ ...prev, cartao: { ...(prev?.cartao || {}), setup: s } }));
     setSetupModal(false);
   }
 
-  // ── render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col min-h-screen pb-20" style={{ background: "var(--bg)", color: "var(--text)" }}>
-
-      {/* ── Header ── */}
       <div className="flex items-center justify-between px-3 pt-3 pb-2 gap-2">
         <h1 className="text-base font-bold" style={{ color: "var(--cc)" }}>💳 {setup.name}</h1>
         <div className="flex items-center gap-2">
-          <button
-            onClick={openAdd}
-            className="px-3 py-1.5 rounded-xl text-xs font-semibold"
-            style={{ background: "var(--cc)", color: "#fff" }}
-          >
+          <button onClick={copyResumo} className="px-2.5 py-1.5 rounded-xl text-xs font-semibold" style={{ background: copied ? "var(--positive)" : "var(--bg-elevated)", color: copied ? "#fff" : "var(--text-sub)", border: "1px solid var(--border)" }} title="Copiar resumo dos lançamentos">
+            {copied ? "Copiado" : "Copiar"}
+          </button>
+          <button onClick={openAdd} className="px-3 py-1.5 rounded-xl text-xs font-semibold" style={{ background: "var(--cc)", color: "#fff" }}>
             + Lançar
           </button>
-          <button
-            onClick={openSetup}
-            className="w-7 h-7 flex items-center justify-center rounded-lg text-sm"
-            style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
-            title="Configurar cartão"
-          >
+          <button onClick={openSetup} className="w-7 h-7 flex items-center justify-center rounded-lg text-sm" style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }} title="Configurar cartão">
             ⚙
           </button>
         </div>
       </div>
 
-      {/* ── Month picker ── */}
       <div className="px-3 pb-1.5">
         <MonthPicker value={month} onChange={setMonth} />
       </div>
 
       <div className="flex flex-col gap-2 px-3">
-
-        {/* ── Summary card ── */}
         <Card>
           <div className="flex items-center justify-between mb-1">
             <div>
               <div className="text-xs uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>Total do mês</div>
-              <span className="text-base font-bold font-mono" style={{ color: "var(--negative)" }}>
-                {YEN(total)}
-              </span>
+              <span className="text-base font-bold font-mono" style={{ color: "var(--negative)" }}>{YEN(total)}</span>
             </div>
             <div className="text-right">
-              {limit > 0 && (
-                <p className="text-xs font-mono" style={{ color: "var(--text-sub)" }}>lim. {YEN(limit)}</p>
-              )}
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                ✕{setup.closingDay} · vcto {setup.dueDay}
-              </p>
+              {limit > 0 && <p className="text-xs font-mono" style={{ color: "var(--text-sub)" }}>lim. {YEN(limit)}</p>}
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>✕{setup.closingDay} · vcto {setup.dueDay}</p>
             </div>
           </div>
 
@@ -193,27 +205,15 @@ export function Cartao({ extras, setExtras }) {
             <>
               <div className="flex justify-between items-center mb-0.5">
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>Uso do limite</span>
-                <span
-                  className="text-xs font-semibold"
-                  style={{ color: limitPct > 80 ? "var(--negative)" : limitPct > 60 ? "var(--warning)" : "var(--positive)" }}
-                >
-                  {limitPct.toFixed(1)}%
-                </span>
+                <span className="text-xs font-semibold" style={{ color: limitPct > 80 ? "var(--negative)" : limitPct > 60 ? "var(--warning)" : "var(--positive)" }}>{limitPct.toFixed(1)}%</span>
               </div>
               <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${limitPct}%`,
-                    background: limitPct > 80 ? "var(--negative)" : limitPct > 60 ? "var(--warning)" : "var(--cc)",
-                  }}
-                />
+                <div className="h-full rounded-full transition-all" style={{ width: `${limitPct}%`, background: limitPct > 80 ? "var(--negative)" : limitPct > 60 ? "var(--warning)" : "var(--cc)" }} />
               </div>
             </>
           )}
         </Card>
 
-        {/* ── Category breakdown ── */}
         {catBreakdown.length > 0 && (
           <section>
             <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Por categoria</div>
@@ -224,21 +224,10 @@ export function Cartao({ extras, setExtras }) {
                 return (
                   <div key={id} className="py-1 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="text-xs flex items-center gap-1" style={{ color: "var(--text)" }}>
-                        <span>{cat.icon}</span>
-                        <span>{cat.label}</span>
-                      </span>
-                      <div className="text-right">
-                        <span className="text-xs font-mono font-semibold" style={{ color: "var(--cc)" }}>{YEN(amt)}</span>
-                        <span className="text-xs ml-1.5" style={{ color: "var(--text-muted)" }}>{pct.toFixed(0)}%</span>
-                      </div>
+                      <span className="text-xs flex items-center gap-1" style={{ color: "var(--text)" }}><span>{cat.icon}</span><span>{cat.label}</span></span>
+                      <div className="text-right"><span className="text-xs font-mono font-semibold" style={{ color: "var(--cc)" }}>{YEN(amt)}</span><span className="text-xs ml-1.5" style={{ color: "var(--text-muted)" }}>{pct.toFixed(0)}%</span></div>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
-                      <div
-                        className="h-full rounded-full"
-                        style={{ width: `${pct}%`, background: "var(--cc)" }}
-                      />
-                    </div>
+                    <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}><div className="h-full rounded-full" style={{ width: `${pct}%`, background: "var(--cc)" }} /></div>
                   </div>
                 );
               })}
@@ -246,246 +235,50 @@ export function Cartao({ extras, setExtras }) {
           </section>
         )}
 
-        {/* ── Transaction list ── */}
         <section>
           <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Lançamentos</div>
           {lancamentos.length === 0 ? (
-            <Card>
-              <p className="text-xs py-1.5 text-center" style={{ color: "var(--text-muted)" }}>
-                Nenhum lançamento neste mês
-              </p>
-            </Card>
+            <Card><p className="text-xs py-1.5 text-center" style={{ color: "var(--text-muted)" }}>Nenhum lançamento neste mês</p></Card>
           ) : (
             <Card>
               {lancamentos.map(l => {
                 const cat = getCat(l.cat);
                 return (
-                  <button
-                    key={l.id}
-                    onClick={() => openEdit(l)}
-                    className="w-full flex items-center gap-2 py-1 border-b last:border-0 text-left"
-                    style={{ borderColor: "var(--border)" }}
-                  >
+                  <button key={l.id} onClick={() => openEdit(l)} className="w-full flex items-center gap-2 py-1 border-b last:border-0 text-left" style={{ borderColor: "var(--border)" }}>
                     <span className="text-sm shrink-0">{cat.icon}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium truncate" style={{ color: "var(--text)" }}>{cat.label}</p>
-                      <p style={{ color: "var(--text-muted)", fontSize: 10 }}>
-                        {fmtDate(l.date, { day: "2-digit", month: "short" })}
-                      </p>
-                    </div>
-                    <span className="text-xs font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>
-                      {YEN(l.amount)}
-                    </span>
+                    <div className="flex-1 min-w-0"><p className="text-xs font-medium truncate" style={{ color: "var(--text)" }}>{cat.label}</p><p style={{ color: "var(--text-muted)", fontSize: 10 }}>{fmtDate(l.date, { day: "2-digit", month: "short" })}</p></div>
+                    <span className="text-xs font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>{YEN(l.amount)}</span>
                   </button>
                 );
               })}
-
-              {/* total row */}
-              <div className="flex justify-between items-center pt-1.5 mt-0.5 border-t" style={{ borderColor: "var(--border)" }}>
-                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Total</span>
-                <span className="text-xs font-bold font-mono" style={{ color: "var(--negative)" }}>{YEN(total)}</span>
-              </div>
+              <div className="flex justify-between items-center pt-1.5 mt-0.5 border-t" style={{ borderColor: "var(--border)" }}><span className="text-xs" style={{ color: "var(--text-muted)" }}>Total</span><span className="text-xs font-bold font-mono" style={{ color: "var(--negative)" }}>{YEN(total)}</span></div>
             </Card>
           )}
         </section>
-
       </div>
 
-
-      {/* ── Add/Edit entry modal ── */}
       {entryModal && (
-        <BottomSheet
-          title={entryModal.id ? "Editar lançamento" : "Novo lançamento"}
-          onClose={() => setEntryModal(null)}
-        >
+        <BottomSheet title={entryModal.id ? "Editar lançamento" : "Novo lançamento"} onClose={() => setEntryModal(null)}>
           <div className="p-4 flex flex-col gap-4">
-
-            {/* date */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Data</label>
-              <input
-                type="date"
-                className="rounded-lg px-3 py-2 text-sm focus:outline-none"
-                style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
-                value={entryModal.date}
-                onChange={e => setEntryModal(m => ({ ...m, date: e.target.value }))}
-              />
-            </div>
-
-            {/* amount */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Valor</label>
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
-                <span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>¥</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  autoFocus
-                  className="flex-1 bg-transparent text-sm focus:outline-none"
-                  style={{ color: "var(--text)" }}
-                  value={entryModal.amount}
-                  onChange={e => setEntryModal(m => ({ ...m, amount: e.target.value }))}
-                  placeholder="0"
-                />
-              </div>
-            </div>
-
-            {/* quick amount buttons */}
-            <div className="flex gap-2 flex-wrap">
-              {[500, 1000, 3000, 5000, 10000].map(v => (
-                <button
-                  key={v}
-                  onClick={() => setEntryModal(m => ({ ...m, amount: String(v) }))}
-                  className="flex-1 py-1.5 rounded-lg text-xs font-medium"
-                  style={{
-                    background: Number(entryModal.amount) === v ? "var(--text)" : "var(--bg-elevated)",
-                    color: Number(entryModal.amount) === v ? "var(--bg)" : "var(--text-sub)",
-                    border: "1px solid var(--border-mid)",
-                    minWidth: 52,
-                  }}
-                >
-                  {YEN(v)}
-                </button>
-              ))}
-            </div>
-
-            {/* category picker */}
-            <div className="flex flex-col gap-2">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Categoria</label>
-              <div className="grid grid-cols-4 gap-2">
-                {CATS.map(cat => {
-                  const active = entryModal.cat === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setEntryModal(m => ({ ...m, cat: cat.id }))}
-                      className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-xs font-medium transition-all"
-                      style={active
-                        ? { background: "var(--cc)", color: "#fff", border: "1px solid var(--cc)" }
-                        : { background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }
-                      }
-                    >
-                      <span className="text-lg leading-none">{cat.icon}</span>
-                      <span className="leading-tight text-center" style={{ fontSize: 10 }}>{cat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* save / delete buttons */}
-            <div className="flex gap-2 pt-1">
-              {entryModal.id && (
-                <button
-                  onClick={() => deleteEntry(entryModal.id)}
-                  className="py-2.5 px-4 rounded-xl text-sm font-medium"
-                  style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)", border: "1px solid rgba(239,68,68,0.3)" }}
-                >
-                  Excluir
-                </button>
-              )}
-              <button
-                onClick={() => setEntryModal(null)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-medium"
-                style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={saveEntry}
-                className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
-                style={{ background: "var(--cc)", color: "#fff" }}
-              >
-                Salvar
-              </button>
-            </div>
-
+            <div className="flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Data</label><input type="date" className="rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }} value={entryModal.date} onChange={e => setEntryModal(m => ({ ...m, date: e.target.value }))} /></div>
+            <div className="flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Valor</label><div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}><span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>¥</span><input type="number" inputMode="numeric" autoFocus className="flex-1 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} value={entryModal.amount} onChange={e => setEntryModal(m => ({ ...m, amount: e.target.value }))} placeholder="0" /></div></div>
+            <div className="flex gap-2 flex-wrap">{[500, 1000, 3000, 5000, 10000].map(v => <button key={v} onClick={() => setEntryModal(m => ({ ...m, amount: String(v) }))} className="flex-1 py-1.5 rounded-lg text-xs font-medium" style={{ background: Number(entryModal.amount) === v ? "var(--text)" : "var(--bg-elevated)", color: Number(entryModal.amount) === v ? "var(--bg)" : "var(--text-sub)", border: "1px solid var(--border-mid)", minWidth: 52 }}>{YEN(v)}</button>)}</div>
+            <div className="flex flex-col gap-2"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Categoria</label><div className="grid grid-cols-4 gap-2">{CATS.map(cat => { const active = entryModal.cat === cat.id; return <button key={cat.id} onClick={() => setEntryModal(m => ({ ...m, cat: cat.id }))} className="flex flex-col items-center gap-1 py-2 px-1 rounded-xl text-xs font-medium transition-all" style={active ? { background: "var(--cc)", color: "#fff", border: "1px solid var(--cc)" } : { background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }}><span className="text-lg leading-none">{cat.icon}</span><span className="leading-tight text-center" style={{ fontSize: 10 }}>{cat.label}</span></button>; })}</div></div>
+            <div className="flex gap-2 pt-1">{entryModal.id && <button onClick={() => deleteEntry(entryModal.id)} className="py-2.5 px-4 rounded-xl text-sm font-medium" style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)", border: "1px solid rgba(239,68,68,0.3)" }}>Excluir</button>}<button onClick={() => setEntryModal(null)} className="flex-1 py-2.5 rounded-xl text-sm font-medium" style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }}>Cancelar</button><button onClick={saveEntry} className="flex-1 py-2.5 rounded-xl text-sm font-semibold" style={{ background: "var(--cc)", color: "#fff" }}>Salvar</button></div>
           </div>
         </BottomSheet>
       )}
 
-      {/* ── Setup modal ── */}
       {setupModal && setupDraft && (
-        <BottomSheet
-          title="Configurar cartão"
-          onClose={() => setSetupModal(false)}
-        >
+        <BottomSheet title="Configurar cartão" onClose={() => setSetupModal(false)}>
           <div className="p-4 flex flex-col gap-4">
-
-            {/* card name */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Nome do cartão</label>
-              <input
-                autoFocus
-                className="rounded-lg px-3 py-2 text-sm focus:outline-none"
-                style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
-                value={setupDraft.name}
-                onChange={e => setSetupDraft(d => ({ ...d, name: e.target.value }))}
-                placeholder="Ex: Rakuten"
-              />
-            </div>
-
-            {/* limit */}
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Limite</label>
-              <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
-                <span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>¥</span>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  className="flex-1 bg-transparent text-sm focus:outline-none"
-                  style={{ color: "var(--text)" }}
-                  value={setupDraft.limit}
-                  onChange={e => setSetupDraft(d => ({ ...d, limit: e.target.value }))}
-                  placeholder="0 (sem limite)"
-                />
-              </div>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>Deixe 0 para não exibir barra de limite</p>
-            </div>
-
-            {/* closing day + due day */}
-            <div className="flex gap-3">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Dia de fechamento</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={31}
-                  className="rounded-lg px-3 py-2 text-sm focus:outline-none"
-                  style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
-                  value={setupDraft.closingDay}
-                  onChange={e => setSetupDraft(d => ({ ...d, closingDay: e.target.value }))}
-                />
-              </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Dia de vencimento</label>
-                <input
-                  type="number"
-                  inputMode="numeric"
-                  min={1}
-                  max={31}
-                  className="rounded-lg px-3 py-2 text-sm focus:outline-none"
-                  style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }}
-                  value={setupDraft.dueDay}
-                  onChange={e => setSetupDraft(d => ({ ...d, dueDay: e.target.value }))}
-                />
-              </div>
-            </div>
-
-            {/* save */}
-            <button
-              onClick={saveSetup}
-              className="w-full py-3 rounded-xl text-sm font-semibold mt-1"
-              style={{ background: "var(--cc)", color: "#fff" }}
-            >
-              Salvar configurações
-            </button>
-
+            <div className="flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Nome do cartão</label><input autoFocus className="rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }} value={setupDraft.name} onChange={e => setSetupDraft(d => ({ ...d, name: e.target.value }))} placeholder="Ex: Rakuten" /></div>
+            <div className="flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Limite</label><div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}><span className="text-sm font-semibold" style={{ color: "var(--text-muted)" }}>¥</span><input type="number" inputMode="numeric" className="flex-1 bg-transparent text-sm focus:outline-none" style={{ color: "var(--text)" }} value={setupDraft.limit} onChange={e => setSetupDraft(d => ({ ...d, limit: e.target.value }))} placeholder="0 (sem limite)" /></div><p className="text-xs" style={{ color: "var(--text-muted)" }}>Deixe 0 para não exibir barra de limite</p></div>
+            <div className="flex gap-3"><div className="flex-1 flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Dia de fechamento</label><input type="number" inputMode="numeric" min={1} max={31} className="rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }} value={setupDraft.closingDay} onChange={e => setSetupDraft(d => ({ ...d, closingDay: e.target.value }))} /></div><div className="flex-1 flex flex-col gap-1"><label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Dia de vencimento</label><input type="number" inputMode="numeric" min={1} max={31} className="rounded-lg px-3 py-2 text-sm focus:outline-none" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text)" }} value={setupDraft.dueDay} onChange={e => setSetupDraft(d => ({ ...d, dueDay: e.target.value }))} /></div></div>
+            <button onClick={saveSetup} className="w-full py-3 rounded-xl text-sm font-semibold mt-1" style={{ background: "var(--cc)", color: "#fff" }}>Salvar configurações</button>
           </div>
         </BottomSheet>
       )}
-
     </div>
   );
 }
