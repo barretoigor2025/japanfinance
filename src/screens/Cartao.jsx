@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Card, SectionLabel, BottomSheet, MonthPicker } from "../components/ui.jsx";
+import { Card, BottomSheet, MonthPicker } from "../components/ui.jsx";
 import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -12,20 +12,21 @@ function todayStr() {
 }
 
 const CATS = [
-  { id: "supermercado", label: "Supermercado",  icon: "🛒" },
-  { id: "restaurante",  label: "Restaurante",   icon: "🍜" },
-  { id: "konbini",      label: "Konbini",       icon: "🏪" },
-  { id: "combustivel",  label: "Combustível",   icon: "⛽" },
-  { id: "online",       label: "Online/Amazon", icon: "🌐" },
-  { id: "farmacia",     label: "Farmácia",      icon: "💊" },
-  { id: "outro",        label: "Outro",         icon: "📌" },
+  { id: "mercado_jp",  label: "Mercado JP",    icon: "🏬" },
+  { id: "mercado_br",  label: "Mercado BR",    icon: "🛒" },
+  { id: "restaurante", label: "Restaurante",   icon: "🍜" },
+  { id: "konbini",     label: "Konbini",       icon: "🏪" },
+  { id: "combustivel", label: "Combustível",   icon: "⛽" },
+  { id: "online",      label: "Online/Amazon", icon: "🌐" },
+  { id: "farmacia",    label: "Farmácia",      icon: "💊" },
+  { id: "homecenter",  label: "HomeCenter",    icon: "🔨" },
+  { id: "outro",       label: "Outro",         icon: "📌" },
 ];
 
+// Old entries with "supermercado" (created before split) default to mercado_jp
 const LEGACY_MAP = {
-  mercado_jp: "supermercado",
-  mercado_br: "supermercado",
-  posto:      "combustivel",
-  homecenter: "outro",
+  supermercado: "mercado_jp",
+  posto:        "combustivel",
 };
 
 function getCat(id) {
@@ -41,7 +42,7 @@ function defaultSetup() {
 // ── Cartao Screen ──────────────────────────────────────────────────────────────
 export function Cartao({ extras, setExtras }) {
   const [month, setMonth] = useState(currentMonth());
-  const [entryModal, setEntryModal] = useState(null);
+  const [entryModal, setEntryModal] = useState(null); // null | { id?, date, amount, cat }
   const [setupModal, setSetupModal] = useState(false);
   const [setupDraft, setSetupDraft] = useState(null);
 
@@ -61,8 +62,7 @@ export function Cartao({ extras, setExtras }) {
   // category breakdown
   const catTotals = {};
   for (const l of lancamentos) {
-    const catId = LEGACY_MAP[l.cat] || l.cat || "outro";
-    catTotals[catId] = (catTotals[catId] || 0) + (l.amount || 0);
+    catTotals[l.cat] = (catTotals[l.cat] || 0) + (l.amount || 0);
   }
   const catBreakdown = Object.entries(catTotals)
     .map(([id, amt]) => ({ id, amt }))
@@ -114,7 +114,7 @@ export function Cartao({ extras, setExtras }) {
   }
 
   function openEdit(l) {
-    setEntryModal({ id: l.id, date: l.date, amount: String(l.amount), cat: LEGACY_MAP[l.cat] || l.cat, customCat: l.customCat });
+    setEntryModal({ id: l.id, date: l.date, amount: String(l.amount), cat: l.cat, customCat: l.customCat });
   }
 
   function openSetup() {
@@ -139,53 +139,59 @@ export function Cartao({ extras, setExtras }) {
 
   // ── render ─────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col min-h-screen pb-28" style={{ background: "var(--bg)", color: "var(--text)" }}>
+    <div className="flex flex-col min-h-screen pb-20" style={{ background: "var(--bg)", color: "var(--text)" }}>
 
       {/* ── Header ── */}
-      <div className="flex items-center justify-between px-3 pt-3 pb-2">
-        <h1 className="text-lg font-bold" style={{ color: "var(--cc)" }}>💳 {setup.name}</h1>
-        <button
-          onClick={openSetup}
-          className="w-8 h-8 flex items-center justify-center rounded-lg text-base"
-          style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
-          title="Configurar cartão"
-        >
-          ⚙️
-        </button>
+      <div className="flex items-center justify-between px-3 pt-3 pb-2 gap-2">
+        <h1 className="text-base font-bold" style={{ color: "var(--cc)" }}>💳 {setup.name}</h1>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={openAdd}
+            className="px-3 py-1.5 rounded-xl text-xs font-semibold"
+            style={{ background: "var(--cc)", color: "#fff" }}
+          >
+            + Lançar
+          </button>
+          <button
+            onClick={openSetup}
+            className="w-7 h-7 flex items-center justify-center rounded-lg text-sm"
+            style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
+            title="Configurar cartão"
+          >
+            ⚙
+          </button>
+        </div>
       </div>
 
       {/* ── Month picker ── */}
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-1.5">
         <MonthPicker value={month} onChange={setMonth} />
       </div>
 
-      <div className="flex flex-col gap-3 px-3">
+      <div className="flex flex-col gap-2 px-3">
 
         {/* ── Summary card ── */}
         <Card>
-          <div className="flex items-start justify-between mb-2">
+          <div className="flex items-center justify-between mb-1">
             <div>
-              <SectionLabel>Total do mês</SectionLabel>
-              <span className="text-2xl font-bold font-mono" style={{ color: "var(--negative)" }}>
+              <div className="text-xs uppercase tracking-wide mb-0.5" style={{ color: "var(--text-muted)" }}>Total do mês</div>
+              <span className="text-base font-bold font-mono" style={{ color: "var(--negative)" }}>
                 {YEN(total)}
               </span>
             </div>
             <div className="text-right">
-              <p className="text-xs mb-0.5" style={{ color: "var(--text-muted)" }}>{setup.name}</p>
               {limit > 0 && (
-                <p className="text-xs font-mono" style={{ color: "var(--text-sub)" }}>
-                  Limite: {YEN(limit)}
-                </p>
+                <p className="text-xs font-mono" style={{ color: "var(--text-sub)" }}>lim. {YEN(limit)}</p>
               )}
-              <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                Fecha dia {setup.closingDay} · Vence dia {setup.dueDay}
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                ✕{setup.closingDay} · vcto {setup.dueDay}
               </p>
             </div>
           </div>
 
           {limit > 0 && (
             <>
-              <div className="flex justify-between items-center mb-1">
+              <div className="flex justify-between items-center mb-0.5">
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>Uso do limite</span>
                 <span
                   className="text-xs font-semibold"
@@ -194,7 +200,7 @@ export function Cartao({ extras, setExtras }) {
                   {limitPct.toFixed(1)}%
                 </span>
               </div>
-              <div className="h-2 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
                 <div
                   className="h-full rounded-full transition-all"
                   style={{
@@ -210,21 +216,21 @@ export function Cartao({ extras, setExtras }) {
         {/* ── Category breakdown ── */}
         {catBreakdown.length > 0 && (
           <section>
-            <SectionLabel>Por categoria</SectionLabel>
+            <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Por categoria</div>
             <Card>
               {catBreakdown.map(({ id, amt }) => {
                 const cat = getCat(id);
                 const pct = total > 0 ? (amt / total) * 100 : 0;
                 return (
-                  <div key={id} className="py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm flex items-center gap-1.5" style={{ color: "var(--text)" }}>
+                  <div key={id} className="py-1 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <span className="text-xs flex items-center gap-1" style={{ color: "var(--text)" }}>
                         <span>{cat.icon}</span>
                         <span>{cat.label}</span>
                       </span>
                       <div className="text-right">
-                        <span className="text-sm font-mono font-semibold" style={{ color: "var(--cc)" }}>{YEN(amt)}</span>
-                        <span className="text-xs ml-2" style={{ color: "var(--text-muted)" }}>{pct.toFixed(0)}%</span>
+                        <span className="text-xs font-mono font-semibold" style={{ color: "var(--cc)" }}>{YEN(amt)}</span>
+                        <span className="text-xs ml-1.5" style={{ color: "var(--text-muted)" }}>{pct.toFixed(0)}%</span>
                       </div>
                     </div>
                     <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "var(--bg-elevated)" }}>
@@ -242,10 +248,10 @@ export function Cartao({ extras, setExtras }) {
 
         {/* ── Transaction list ── */}
         <section>
-          <SectionLabel>Lançamentos</SectionLabel>
+          <div className="text-xs uppercase tracking-wide mb-1" style={{ color: "var(--text-muted)" }}>Lançamentos</div>
           {lancamentos.length === 0 ? (
             <Card>
-              <p className="text-xs py-2 text-center" style={{ color: "var(--text-muted)" }}>
+              <p className="text-xs py-1.5 text-center" style={{ color: "var(--text-muted)" }}>
                 Nenhum lançamento neste mês
               </p>
             </Card>
@@ -257,17 +263,17 @@ export function Cartao({ extras, setExtras }) {
                   <button
                     key={l.id}
                     onClick={() => openEdit(l)}
-                    className="w-full flex items-center gap-2 py-1.5 border-b last:border-0 text-left"
+                    className="w-full flex items-center gap-2 py-1 border-b last:border-0 text-left"
                     style={{ borderColor: "var(--border)" }}
                   >
-                    <span className="text-base shrink-0">{cat.icon}</span>
+                    <span className="text-sm shrink-0">{cat.icon}</span>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>{cat.label}</p>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                      <p className="text-xs font-medium truncate" style={{ color: "var(--text)" }}>{cat.label}</p>
+                      <p style={{ color: "var(--text-muted)", fontSize: 10 }}>
                         {fmtDate(l.date, { day: "2-digit", month: "short" })}
                       </p>
                     </div>
-                    <span className="text-sm font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>
+                    <span className="text-xs font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>
                       {YEN(l.amount)}
                     </span>
                   </button>
@@ -275,22 +281,13 @@ export function Cartao({ extras, setExtras }) {
               })}
 
               {/* total row */}
-              <div className="flex justify-between items-center pt-2 mt-1 border-t" style={{ borderColor: "var(--border)" }}>
-                <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Total</span>
-                <span className="text-sm font-bold font-mono" style={{ color: "var(--negative)" }}>{YEN(total)}</span>
+              <div className="flex justify-between items-center pt-1.5 mt-0.5 border-t" style={{ borderColor: "var(--border)" }}>
+                <span className="text-xs" style={{ color: "var(--text-muted)" }}>Total</span>
+                <span className="text-xs font-bold font-mono" style={{ color: "var(--negative)" }}>{YEN(total)}</span>
               </div>
             </Card>
           )}
         </section>
-
-        {/* add button */}
-        <button
-          onClick={openAdd}
-          className="w-full py-3 rounded-xl text-sm font-semibold mt-1"
-          style={{ background: "var(--cc)", color: "#fff" }}
-        >
-          + Novo lançamento
-        </button>
 
       </div>
 
