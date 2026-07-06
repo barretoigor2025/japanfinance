@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
-import { Card, SectionLabel, Badge, Input, BottomSheet } from "../components/ui.jsx";
-import { YEN, fmtDate, currentMonth, prevMonth, nextMonth } from "../utils/fmt.js";
+import { Card, SectionLabel, Badge, BottomSheet } from "../components/ui.jsx";
+import { YEN, currentMonth, prevMonth, nextMonth } from "../utils/fmt.js";
 import { Carro } from "./Carro.jsx";
 
 // ── helpers ────────────────────────────────────────────────────────────────────
@@ -25,7 +25,6 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   // modal states
   const [itemModal, setItemModal] = useState(null); // {tipo, id?, name, amount, isMonth}
   const [cartaoModal, setCartaoModal] = useState(null); // {id?, nome, valor}
-  const [deleteConfirm, setDeleteConfirm] = useState(null); // id to delete
 
   function showToast(msg) {
     setToast(msg);
@@ -355,7 +354,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     );
   }
 
-  function HiddenRow({ item, tipo }) {
+  function HiddenRow({ item }) {
     return (
       <div className="flex items-center gap-2 py-1.5" style={{ opacity: 0.5 }}>
         <button

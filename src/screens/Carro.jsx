@@ -317,7 +317,7 @@ export function Carro({ carro, setCarro }) {
                     <p className="text-xs py-2 text-center" style={{ color: "var(--text-muted)" }}>Nenhuma parcela cadastrada</p>
                   )}
 
-                  {(fin.parcelas || []).map((p, idx) => {
+                  {(fin.parcelas || []).map((p) => {
                     const isNext = nextUnpaid?.id === p.id;
                     const rowColor = p.pago ? "var(--positive)" : isNext ? "var(--warning)" : "var(--text-sub)";
                     return (

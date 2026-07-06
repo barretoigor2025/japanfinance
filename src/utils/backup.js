@@ -1,3 +1,8 @@
+export function daysSinceLastBackup(key = "jst3_last_backup") {
+  const lastBackup = localStorage.getItem(key);
+  return lastBackup ? Math.floor((Date.now() - new Date(lastBackup)) / 86400000) : null;
+}
+
 export function normalizeExtras(data = {}) {
   return {
     gensen: data.gensen || data.extras?.gensen || [],
@@ -30,7 +35,9 @@ export function exportBackup(entries, settings, gastos, carro, auditHistory, ext
     a.download = `jst-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  } catch {}
+  } catch (err) {
+    console.error("Backup file download failed:", err);
+  }
   return json;
 }
 

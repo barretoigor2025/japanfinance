@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, Input, Toggle, SectionLabel } from "../components/ui.jsx";
-import { calcDay, estimateDeductions, defaultSettings } from "../utils/calc.js";
+import { calcDay, estimateDeductions } from "../utils/calc.js";
 import { getYukyuEntitlement } from "../utils/yukyu.js";
 import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 import { TeateSection } from "../components/TeateSection.jsx";
