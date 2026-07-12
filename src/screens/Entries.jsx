@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, MonthPicker, Badge, ConfirmBar } from "../components/ui.jsx";
 import { calcDay } from "../utils/calc.js";
-import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
+import { YEN, formatMinutes, currentMonth } from "../utils/fmt.js";
 import { EntryForm } from "../components/EntryForm.jsx";
 import { CalcDetailModal } from "../components/CalcDetailModal.jsx";
 

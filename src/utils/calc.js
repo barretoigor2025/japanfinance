@@ -121,7 +121,7 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   }
 
   // Pay calculations
-  let normalPay = 0, overtimePay = 0, nightPay = 0, holidayPay = 0, satSunPay = 0;
+  let normalPay, overtimePay = 0, nightPay, holidayPay = 0, satSunPay = 0;
 
   if (isHoliday) {
     holidayPay = totalHours * rate * rules.holidayRate;

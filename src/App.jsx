@@ -16,7 +16,7 @@ import { SuperFinance } from "./screens/SuperFinance.jsx";
 import { Settings } from "./screens/Settings.jsx";
 import { Cartao } from "./screens/Cartao.jsx";
 import { Impostos } from "./screens/Impostos.jsx";
-import { normalizeExtras } from "./utils/backup.js";
+import { normalizeExtras, daysSinceLastBackup } from "./utils/backup.js";
 
 const TABS = [
   { id: "dashboard", label: "Início",   icon: "🏠" },
@@ -49,8 +49,7 @@ export default function App() {
     document.body.style.color = theme === "dark" ? "#f0f0f0" : "#0f0f0f";
   }, [theme]);
 
-  const lastBackup = localStorage.getItem("jst3_last_backup");
-  const daysSince = lastBackup ? Math.floor((Date.now() - new Date(lastBackup)) / 86400000) : null;
+  const daysSince = daysSinceLastBackup();
   const backupAlert = daysSince === null || daysSince > 7;
 
   async function handleRestore(data) {

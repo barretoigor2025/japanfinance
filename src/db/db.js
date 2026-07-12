@@ -32,5 +32,7 @@ export async function dbSet(key, value) {
   try {
     const db = await getDB();
     await db.put("kv", value, key);
-  } catch {}
+  } catch (err) {
+    console.error(`dbSet failed for key "${key}":`, err);
+  }
 }

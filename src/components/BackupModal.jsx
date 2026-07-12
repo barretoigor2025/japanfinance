@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { BottomSheet } from "./ui.jsx";
-import { exportBackup, parseBackup } from "../utils/backup.js";
+import { exportBackup, parseBackup, daysSinceLastBackup } from "../utils/backup.js";
 
 export function BackupModal({ entries, settings, gastos, carro, auditHistory, extras, onRestore, onClose }) {
   const [tab, setTab] = useState("export");
@@ -9,10 +9,8 @@ export function BackupModal({ entries, settings, gastos, carro, auditHistory, ex
   const [error, setError] = useState(null);
   const [backupJson, setBackupJson] = useState(null);
   const [confirm, setConfirm] = useState(false);
-
   const lastBackupKey = "jst3_last_backup";
-  const lastBackup = localStorage.getItem(lastBackupKey);
-  const daysSince = lastBackup ? Math.floor((Date.now() - new Date(lastBackup)) / 86400000) : null;
+  const daysSince = daysSinceLastBackup(lastBackupKey);
   const cardCount = extras?.cartao?.lancamentos?.length || 0;
   const taxCount = extras?.taxPayments?.reduce((s, p) => s + (p.parcelas?.length || 0), 0) || 0;
 

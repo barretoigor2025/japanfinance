@@ -39,7 +39,6 @@ export function Impostos({ extras, setExtras }) {
   const [showVehicleForm, setShowVehicleForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentVehicleId, setPaymentVehicleId] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(null);
   const [confirmPay, setConfirmPay] = useState(null);
 
   const [gensenForm, setGensenForm] = useState({ nenBun: new Date().getFullYear() - 1, empresa: "", shiharaiGaku: "", gensenZei: "", shakaiHoken: "" });

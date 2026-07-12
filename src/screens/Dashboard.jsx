@@ -1,28 +1,26 @@
 import { useState } from "react";
-import { Card, MonthPicker, Badge } from "../components/ui.jsx";
+import { Card, MonthPicker } from "../components/ui.jsx";
 import { calcDay, estimateDeductions } from "../utils/calc.js";
 import { getYukyuEntitlement } from "../utils/yukyu.js";
 import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
 import { EntryForm } from "../components/EntryForm.jsx";
 import { YukyuModal } from "../components/YukyuModal.jsx";
-import { CalcDetailModal } from "../components/CalcDetailModal.jsx";
 
 export function Dashboard({ entries, settings, onAddEntry }) {
   const [month, setMonth] = useState(currentMonth);
   const [showForm, setShowForm] = useState(false);
   const [showYukyu, setShowYukyu] = useState(false);
-  const [detailEntry, setDetailEntry] = useState(null);
 
   const monthEntries = entries
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  let accOT = 0;
-  const calcs = monthEntries.map(e => {
-    const c = calcDay(e, settings, accOT);
-    accOT += c.overtimeHours;
-    return c;
-  });
+  const calcs = monthEntries.reduce((acc, e) => {
+    const c = calcDay(e, settings, acc.total);
+    acc.total += c.overtimeHours;
+    acc.list.push(c);
+    return acc;
+  }, { total: 0, list: [] }).list;
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);

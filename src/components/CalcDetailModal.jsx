@@ -1,4 +1,4 @@
-import { BottomSheet, StatRow } from "./ui.jsx";
+import { BottomSheet } from "./ui.jsx";
 import { calcDay } from "../utils/calc.js";
 import { YEN, formatMinutes } from "../utils/fmt.js";
 
