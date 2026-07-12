@@ -1,0 +1,1072 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="description" content="Guia de renovação de visto japonês (在留期間更新許可申請) por categoria de residência, com links oficiais da Agência de Serviços de Imigração do Japão (ISA) e uma ferramenta para preencher os formulários em PDF." />
+  <title>Renovação de Visto — Guia Oficial ISA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #f7f8fa;
+      --bg-card:   #ffffff;
+      --bg-elev:   #eef0f4;
+      --border:    #e0e3e9;
+      --border-mid:#cfd3db;
+      --text:      #111827;
+      --text-sub:  #374151;
+      --text-muted:#6b7280;
+      --accent:    #c90c38;
+      --accent-2:  #a8052c;
+      --positive:  #15803d;
+      --warning:   #b45309;
+      --negative:  #b91c1c;
+      --info:      #1d4ed8;
+      --radius:    16px;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; overflow-x: hidden; width: 100%; }
+    body {
+      font-family: 'Plus Jakarta Sans', 'Noto Sans JP', system-ui, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5;
+      min-height: 100vh; min-height: 100dvh;
+      -webkit-font-smoothing: antialiased;
+      overflow-wrap: break-word; word-break: break-word;
+      text-size-adjust: 100%; -webkit-text-size-adjust: 100%;
+    }
+    .wrap { max-width: 720px; margin: 0 auto; padding: 16px 16px calc(64px + env(safe-area-inset-bottom)); }
+    @media (max-width: 360px) {
+      .wrap { padding-left: 12px; padding-right: 12px; }
+      .card { padding: 15px; }
+    }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+    .topbar {
+      position: sticky; top: 0; z-index: 30;
+      display: flex; align-items: center; gap: 10px;
+      padding: 14px 16px; padding-top: calc(14px + env(safe-area-inset-top));
+      padding-left: calc(16px + env(safe-area-inset-left)); padding-right: calc(16px + env(safe-area-inset-right));
+      background: rgba(247,248,250,0.94); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar .flag { font-size: 20px; }
+    .topbar h1 { font-size: 14px; font-weight: 700; margin: 0; letter-spacing: -0.01em; }
+    .topbar .jp { font-size: 11px; color: var(--text-muted); font-weight: 500; }
+    .topbar .back {
+      margin-left: auto; font-size: 13px; font-weight: 600; color: var(--text-sub);
+      background: var(--bg-elev); border: 1px solid var(--border-mid);
+      padding: 7px 12px; border-radius: 10px; cursor: pointer; font-family: inherit;
+    }
+
+    .card {
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+      padding: 18px; margin-bottom: 14px;
+    }
+    .card h2 { font-size: 18px; font-weight: 800; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .card p  { font-size: 14px; color: var(--text-sub); margin: 0 0 10px; }
+    .muted   { color: var(--text-muted); font-size: 13px; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em;
+      color: var(--text-muted); background: var(--bg-elev); border: 1px solid var(--border-mid);
+      padding: 4px 10px; border-radius: 999px; margin-bottom: 12px;
+    }
+
+    .notice { border-radius: 12px; padding: 12px 14px; font-size: 13px; border: 1px solid; margin-bottom: 12px; line-height: 1.5; }
+    .notice.warn { background: rgba(180,83,9,0.07); border-color: rgba(180,83,9,0.28); color: #7c2d12; }
+    .notice.info { background: rgba(29,78,216,0.07); border-color: rgba(29,78,216,0.28); color: #1e3a8a; }
+    .notice.bad  { background: rgba(185,28,28,0.07); border-color: rgba(185,28,28,0.28); color: #7f1d1d; }
+    .notice.good { background: rgba(21,128,61,0.07); border-color: rgba(21,128,61,0.28); color: #14532d; }
+
+    .btn {
+      display: block; width: 100%; text-align: center; font-family: inherit; font-size: 16px; font-weight: 700;
+      padding: 15px 18px; border-radius: 14px; border: none; cursor: pointer;
+      transition: transform .06s ease, filter .15s ease;
+    }
+    .btn:active { transform: scale(0.985); }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover { filter: brightness(1.07); }
+    .btn-ghost { background: var(--bg-elev); color: var(--text); border: 1px solid var(--border-mid); }
+    .btn-row { display: flex; gap: 10px; }
+    .btn-row .btn { width: auto; flex: 1; }
+    .btn-sm { font-size: 13px; padding: 10px 14px; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; }
+
+    .sect-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text-muted); margin: 18px 0 8px; }
+    .sect-title:first-child { margin-top: 0; }
+
+    /* ---------- Busca de categoria ---------- */
+    .search-box {
+      width: 100%; font-family: inherit; font-size: 15px; font-weight: 500;
+      background: var(--bg-elev); border: 1.5px solid var(--border-mid); color: var(--text);
+      border-radius: 13px; padding: 13px 16px; margin-bottom: 4px;
+    }
+    .search-box:focus { outline: none; border-color: var(--accent); }
+
+    .cat-item {
+      display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; font-family: inherit;
+      background: var(--bg-card); border: 1.5px solid var(--border); color: var(--text);
+      border-radius: 13px; padding: 13px 14px; font-size: 14px; font-weight: 600; cursor: pointer;
+      margin-bottom: 8px; transition: border-color .12s ease, background .12s ease;
+    }
+    .cat-item:hover { border-color: var(--accent); }
+    .cat-item .em { font-size: 20px; flex-shrink: 0; }
+    .cat-item .t  { flex: 1; min-width: 0; }
+    .cat-item .t .jp { display: block; font-size: 11px; color: var(--text-muted); font-weight: 500; margin-top: 1px; }
+    .cat-item .arr { color: var(--text-muted); flex-shrink: 0; }
+    .cat-item.excluded { opacity: .55; }
+
+    .cat-badge {
+      display: inline-block; font-size: 12px; font-weight: 700; background: rgba(201,12,56,0.07); color: #881337;
+      border: 1px solid rgba(201,12,56,0.22); padding: 4px 12px; border-radius: 999px; margin-bottom: 10px;
+    }
+    .back-link { font-size: 13px; color: var(--text-muted); text-decoration: none; background: none; border: none; font-family: inherit; cursor: pointer; padding: 0; }
+
+    /* ---------- Documentos ---------- */
+    .doc-group { margin-bottom: 18px; }
+    .doc-group:last-child { margin-bottom: 0; }
+    .doc-group-h { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em; }
+    .doc-group-sub { font-size: 12px; color: var(--text-muted); margin: 0 0 12px; }
+
+    .doc { background: var(--bg-elev); border: 1px solid var(--border); border-radius: 13px; padding: 13px 14px; margin-bottom: 10px; }
+    .doc:last-child { margin-bottom: 0; }
+    .doc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .doc-name { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.35; }
+    .doc-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+
+    .catnum { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 8px; border: 1px solid rgba(29,78,216,0.28); background: rgba(29,78,216,0.08); color: #1e3a8a; }
+
+    .dl {
+      display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 12px; font-weight: 700;
+      text-decoration: none; white-space: nowrap; background: var(--accent); color: #fff;
+      padding: 7px 12px; border-radius: 9px; border: none; cursor: pointer; transition: filter .12s ease;
+    }
+    .dl:hover { filter: brightness(1.1); }
+    .dl.alt { background: var(--bg-card); color: var(--text-sub); border: 1px solid var(--border-mid); }
+    .dl-row { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 10px; }
+
+    .callout { border-left: 3px solid var(--accent); background: rgba(201,12,56,0.04); border-radius: 0 10px 10px 0; padding: 11px 13px; font-size: 12.5px; line-height: 1.55; color: var(--text-sub); margin: 12px 0; }
+    .callout b { color: var(--text); }
+    .callout.warn { border-left-color: var(--warning); background: rgba(180,83,9,0.05); }
+
+    .src-link { display: block; font-size: 12px; color: var(--info); text-decoration: none; word-break: break-all; margin-top: 4px; }
+
+    .hide { display: none !important; }
+    .fade { animation: fade .25s ease; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+    .legal { font-size: 11px; color: var(--text-muted); line-height: 1.6; border-top: 1px solid var(--border); padding-top: 16px; margin-top: 8px; }
+    .legal b { color: var(--text-sub); }
+    .legal a { color: var(--info); text-decoration: none; }
+
+    /* ---------- Categoria 1-4 ---------- */
+    .catdef { border: 1px solid var(--border-mid); border-radius: 12px; padding: 12px 13px; margin-bottom: 8px; }
+    .catdef .num { font-size: 12px; font-weight: 800; color: var(--accent); margin-bottom: 3px; }
+    .catdef p { font-size: 12.5px; color: var(--text-sub); margin: 0; }
+
+    /* ---------- Ferramenta de preenchimento de PDF ---------- */
+    .dropzone {
+      border: 2px dashed var(--border-mid); border-radius: 16px; padding: 32px 16px; text-align: center;
+      cursor: pointer; transition: border-color .15s ease, background .15s ease; background: var(--bg-elev);
+    }
+    .dropzone.drag { border-color: var(--accent); background: rgba(201,12,56,0.05); }
+    .dropzone .ic { font-size: 34px; margin-bottom: 8px; }
+    .dropzone .t1 { font-size: 14px; font-weight: 700; color: var(--text); }
+    .dropzone .t2 { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+    .filler-toolbar {
+      position: sticky; top: 68px; z-index: 20;
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      background: var(--bg-card); border: 1px solid var(--border); border-radius: 13px;
+      padding: 9px 10px; margin-bottom: 12px;
+    }
+    .tb-btn {
+      display: inline-flex; align-items: center; gap: 5px; font-family: inherit; font-size: 12px; font-weight: 700;
+      background: var(--bg-elev); color: var(--text-sub); border: 1px solid var(--border-mid);
+      padding: 7px 10px; border-radius: 9px; cursor: pointer;
+    }
+    .tb-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .tb-btn:disabled { opacity: .4; cursor: not-allowed; }
+    .tb-num { width: 46px; font-family: inherit; font-size: 12px; text-align: center; border: 1px solid var(--border-mid); border-radius: 8px; padding: 6px 2px; background: var(--bg-card); color: var(--text); }
+    .tb-sep { width: 1px; align-self: stretch; background: var(--border-mid); margin: 0 2px; }
+    .tb-page { font-size: 12px; color: var(--text-muted); font-weight: 600; white-space: nowrap; }
+
+    .pdf-stage { overflow: auto; border: 1px solid var(--border); border-radius: 13px; background: #6b7280; padding: 14px; margin-bottom: 12px; max-height: 70vh; }
+    .pdf-page-wrap { position: relative; margin: 0 auto; box-shadow: 0 2px 10px rgba(0,0,0,0.35); background: #fff; width: max-content; }
+    .pdf-page-wrap canvas { display: block; }
+    .text-layer { position: absolute; inset: 0; cursor: crosshair; }
+    .text-layer.moving { cursor: default; }
+
+    .txt-box-wrap { position: absolute; }
+    .txt-box {
+      min-width: 18px; min-height: 14px;
+      border: 1.5px dashed rgba(29,78,216,0.7); background: rgba(255,255,255,0.55);
+      padding: 1px 3px; font-family: 'Noto Sans JP', sans-serif; color: #111; white-space: pre; line-height: 1.15;
+      cursor: move; outline: none;
+    }
+    .txt-box:focus { border-style: solid; background: rgba(255,255,255,0.85); }
+    .txt-box-wrap .del {
+      position: absolute; top: -11px; right: -11px; width: 20px; height: 20px; border-radius: 50%;
+      background: var(--negative); color: #fff; font-size: 12px; line-height: 20px; text-align: center;
+      cursor: pointer; display: none; z-index: 1;
+    }
+    .txt-box-wrap:hover .del, .txt-box-wrap:focus-within .del { display: block; }
+
+    .empty-hint { text-align: center; padding: 26px 10px; color: var(--text-muted); font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <span class="flag">🗾</span>
+    <div>
+      <h1>Renovação de Visto</h1>
+      <div class="jp">在留期間更新許可申請 · fonte oficial ISA</div>
+    </div>
+    <button class="back hide" id="topback" onclick="App.goBack()">← Voltar</button>
+  </div>
+
+  <div class="wrap">
+
+    <!-- ============================================================= -->
+    <!-- TELA 1 — INÍCIO / PROCEDIMENTO GERAL                           -->
+    <!-- ============================================================= -->
+    <section id="screen-intro">
+      <div class="card">
+        <span class="pill">🗾 Imigração do Japão · ISA</span>
+        <h2>Guia de Renovação de Visto</h2>
+        <p>
+          Esta página reúne, <b>diretamente do site oficial da Agência de Serviços de Imigração
+          do Japão (出入国在留管理庁 / Immigration Services Agency — ISA, domínio
+          <b>moj.go.jp/isa</b>)</b>, o procedimento e os documentos exigidos para o
+          <b>在留期間更新許可申請 (Application for Extension of Period of Stay)</b> — a renovação
+          do prazo de estadia sem trocar de categoria de visto — organizados por categoria de
+          residência (在留資格).
+        </p>
+        <p>
+          Todos os links de documentos e formulários abaixo apontam <b>direto para o domínio
+          oficial moj.go.jp</b>. Nada aqui foi inventado: cada categoria traz o link da página
+          oficial de origem para você conferir.
+        </p>
+        <div class="notice info">
+          🔒 Esta ferramenta roda <b>inteiramente no seu navegador</b>. Nenhum dado, documento
+          ou PDF preenchido é enviado para qualquer servidor — nem o nosso, nem de terceiros.
+        </div>
+        <div class="notice warn">
+          ⚠️ Isto <b>não substitui</b> aconselhamento de um advogado ou despachante administrativo
+          (<b>行政書士 / gyoseishoshi</b>), nem garante aprovação. Regras mudam com frequência —
+          sempre confira a página oficial linkada em cada categoria antes de enviar sua solicitação.
+        </div>
+        <button class="btn btn-primary" onclick="App.goCategories()">Escolher minha categoria de visto →</button>
+      </div>
+
+      <div class="card">
+        <div class="sect-title">Procedimento geral (vale para quase todas as categorias)</div>
+        <ul style="list-style:none; padding:0; margin:0;">
+          <li style="padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-sub);">
+            <b style="color:var(--text)">📅 Quando pedir:</b> a partir de <b>3 meses antes</b> do
+            vencimento do seu período de estadia atual, e sempre <b>antes</b> do vencimento
+            (mesmo 1 dia de atraso já conta como permanência irregular).
+          </li>
+          <li style="padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-sub);">
+            <b style="color:var(--text)">📍 Onde:</b> no escritório regional de imigração
+            (<b>地方出入国在留管理局</b>) responsável pela sua região de residência, ou pela
+            Central de Informação para Estrangeiros: <b>0570-013904</b>.
+          </li>
+          <li style="padding:9px 0; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--text-sub);">
+            <b style="color:var(--text)">💴 Taxa:</b> <b>¥6.000</b> em selo fiscal (収入印紙) na
+            aprovação presencial, ou <b>¥5.500</b> pelo sistema online.
+          </li>
+          <li style="padding:9px 0; font-size:13.5px; color:var(--text-sub);">
+            <b style="color:var(--text)">📎 Documentos comuns a quase todas as categorias:</b>
+            formulário de renovação (1 via), 1 foto (4cm×3cm, tirada nos últimos 6 meses),
+            passaporte e cartão de residência (apresentação).
+          </li>
+        </ul>
+        <a class="src-link" href="https://www.moj.go.jp/isa/applications/procedures/16-3.html" target="_blank" rel="noopener">Fonte oficial: moj.go.jp/isa/applications/procedures/16-3.html</a>
+      </div>
+
+      <div class="card">
+        <div class="sect-title">O que são as "Categorias 1 a 4" da empresa/instituição</div>
+        <p style="margin-top:-4px;">
+          Para <b>vistos de trabalho</b>, o ISA classifica a empresa/instituição patrocinadora em
+          4 categorias, que definem quantos documentos você precisa anexar (empresas maiores/mais
+          estáveis exigem menos papelada do funcionário). Texto oficial, traduzido literalmente:
+        </p>
+        <div class="catdef"><div class="num">Categoria 1</div><p>Empresa listada em bolsa de valores japonesa; seguradora mútua; órgão público japonês ou estrangeiro; instituição administrativa independente; corporação especial/autorizada; entidade de utilidade pública de órgão público japonês; pessoa jurídica de interesse público (lei do imposto de renda corporativo); empresa "inovadora" reconhecida por portaria do sistema de profissional altamente qualificado; ou entidade que atenda certas condições específicas.</p></div>
+        <div class="catdef"><div class="num">Categoria 2</div><p>Empresa/pessoa cujo total de imposto retido na fonte sobre salários (源泉徴収税額), conforme o demonstrativo do ano anterior, seja de <b>¥10.000.000 ou mais</b> — ou entidade que comprove se enquadrar na Categoria 3 e tenha aprovação de uso do sistema online de solicitação de residência.</p></div>
+        <div class="catdef"><div class="num">Categoria 3</div><p>Empresa/pessoa que apresentou o demonstrativo anual de retenção de imposto sobre salários dos funcionários, mas que não se enquadra na Categoria 2.</p></div>
+        <div class="catdef" style="margin-bottom:0;"><div class="num">Categoria 4</div><p>Qualquer empresa/pessoa que não se enquadre nas Categorias 1, 2 ou 3 — por exemplo, empresas com menos de 1 ano de fundação.</p></div>
+        <a class="src-link" href="https://www.moj.go.jp/isa/content/001344550.pdf" target="_blank" rel="noopener">Fonte oficial (Q&A ISA, Ｑ１１): moj.go.jp/isa/content/001344550.pdf</a>
+      </div>
+
+      <div class="legal">
+        <b>Aviso legal:</b> conteúdo compilado a partir de páginas públicas do site oficial da
+        Immigration Services Agency of Japan (出入国在留管理庁), domínio <b>moj.go.jp/isa</b>,
+        pesquisadas em julho de 2026. As regras de imigração mudam com frequência — sempre
+        confira o link "Fonte oficial" de cada categoria antes de agir. Esta página não é afiliada
+        ao governo japonês.
+      </div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TELA 2 — LISTA DE CATEGORIAS                                   -->
+    <!-- ============================================================= -->
+    <section id="screen-categories" class="hide">
+      <input type="text" class="search-box" id="cat-search" placeholder="🔎 Buscar categoria (ex: engenheiro, cônjuge, estudante...)" oninput="App.filterCategories(this.value)" />
+      <div id="cat-list" style="margin-top:14px;"></div>
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TELA 3 — DETALHE DA CATEGORIA                                  -->
+    <!-- ============================================================= -->
+    <section id="screen-detail" class="hide"></section>
+
+    <!-- ============================================================= -->
+    <!-- TELA 4 — FERRAMENTA DE PREENCHIMENTO DE PDF                    -->
+    <!-- ============================================================= -->
+    <section id="screen-filler" class="hide">
+      <div class="card" id="filler-intro">
+        <span class="pill">✍️ Preencher formulário</span>
+        <h2>Preencher um PDF oficial</h2>
+        <p>
+          1) Baixe o formulário oficial em PDF na categoria escolhida (ou em qualquer PDF da
+          Imigração). 2) Carregue o mesmo arquivo aqui embaixo. 3) Clique sobre o formulário para
+          adicionar caixas de texto nos campos e digite. 4) Baixe o PDF preenchido, pronto para
+          imprimir ou enviar.
+        </p>
+        <div class="notice info">🔒 O arquivo é lido e processado <b>só no seu navegador</b> — nunca é enviado para nenhum servidor.</div>
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+          <div class="ic">📄</div>
+          <div class="t1">Toque para escolher o PDF baixado, ou arraste aqui</div>
+          <div class="t2">O arquivo continua só no seu aparelho</div>
+        </div>
+        <input type="file" id="file-input" accept="application/pdf" class="hide" onchange="Filler.onFile(this.files[0])" />
+        <div class="muted" id="font-status" style="margin-top:10px;"></div>
+      </div>
+
+      <div id="filler-editor" class="hide">
+        <div class="filler-toolbar">
+          <button class="tb-btn" id="tb-add" onclick="Filler.toggleAddMode()">✏️ Adicionar texto</button>
+          <div class="tb-sep"></div>
+          <span style="font-size:11px; color:var(--text-muted); font-weight:600;">Tam.</span>
+          <input type="number" class="tb-num" id="tb-size" value="10" min="6" max="36" onchange="Filler.setDefaultSize(this.value)" />
+          <div class="tb-sep"></div>
+          <button class="tb-btn" onclick="Filler.zoom(-0.15)">➖</button>
+          <button class="tb-btn" onclick="Filler.zoom(0.15)">➕</button>
+          <div class="tb-sep"></div>
+          <button class="tb-btn" id="tb-prev" onclick="Filler.prevPage()">‹</button>
+          <span class="tb-page" id="tb-pageinfo">1 / 1</span>
+          <button class="tb-btn" id="tb-next" onclick="Filler.nextPage()">›</button>
+        </div>
+        <div class="pdf-stage" id="pdf-stage"></div>
+        <button class="btn btn-primary" onclick="Filler.exportPdf(this)">⬇ Baixar PDF preenchido</button>
+        <p class="muted" style="text-align:center; margin-top:8px;">Dica: clique numa caixa de texto para arrastá-la; use o × para apagar.</p>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- pdf-lib + fontkit (para gerar o PDF final com suporte a caracteres japoneses) — hospedados localmente para não depender de CDN externo -->
+  <script src="vendor/pdf-lib.min.js"></script>
+  <script src="vendor/fontkit.umd.min.js"></script>
+
+  <script>
+  /* ===================================================================
+     BASE DE DADOS — CATEGORIAS DE RESIDÊNCIA (fonte: moj.go.jp/isa)
+     Pesquisado diretamente das páginas oficiais em julho de 2026.
+     =================================================================== */
+  const BASE = "https://www.moj.go.jp";
+  const GROUPS = {
+    trabalho: "💼 Trabalho",
+    estudo:   "🎓 Estudo e Estágio",
+    familia:  "👪 Família / Status",
+    outras:   "📌 Outras categorias",
+  };
+
+  const CATEGORIES = [
+    { id:"official", en:"Official", pt:"Uso Oficial", jp:"公用", group:"trabalho", em:"🏛️",
+      desc:"Atividades relacionadas ao serviço público de um governo estrangeiro ou organização internacional reconhecida pelo Japão, exercidas por quem trabalha nesse serviço (ou familiares do mesmo domicílio) — exceto os casos já enquadrados no status \"Diplomata\".",
+      stay:"5 anos, 3 anos, 1 ano, 3 meses, 30 dias ou 15 dias.", cats:false,
+      checklists:[], form:{pdf:BASE+"/isa/content/930004118.pdf", xlsx:BASE+"/isa/content/930004119.xlsx"}, other:[],
+      src:BASE+"/isa/applications/status/official.html",
+      note:"A página não lista um checklist de documentos em PDF separado; os documentos citados no texto são passaporte e um documento oficial do governo/organização internacional confirmando identidade e função." },
+
+    { id:"professor", en:"Professor", pt:"Professor", jp:"教授", group:"trabalho", em:"🎓",
+      desc:"Atividades de pesquisa, orientação de pesquisa ou ensino em universidades japonesas (ou equivalentes) e institutos de tecnologia (高等専門学校).",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist de documentos (Categoria 1 = tempo integral, Categoria 2 = tempo parcial)", BASE+"/isa/content/001368411.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004092.pdf", xlsx:BASE+"/isa/content/930004093.xlsx"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/professor.html", note:"" },
+
+    { id:"artist", en:"Artist", pt:"Artista", jp:"芸術", group:"trabalho", em:"🎨",
+      desc:"Atividades remuneradas de música, artes plásticas, literatura e outras atividades artísticas (excluindo as classificadas como \"Entretenimento\"). Ex.: compositores, pintores, escritores.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:false,
+      checklists:[["Checklist de documentos", BASE+"/isa/content/001365832.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004100.pdf", xlsx:BASE+"/isa/content/930004101.xlsx", sample:BASE+"/isa/content/001464968.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/artist.html", note:"" },
+
+    { id:"religiousactivities", en:"Religious Activities", pt:"Atividades Religiosas", jp:"宗教", group:"trabalho", em:"⛩️",
+      desc:"Atividades de proselitismo (布教) e outras atividades religiosas conduzidas por religiosos enviados ao Japão por organizações religiosas estrangeiras.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:false,
+      checklists:[["Checklist de documentos", BASE+"/isa/content/001365799.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004102.pdf", xlsx:BASE+"/isa/content/930004103.xlsx", sample:BASE+"/isa/content/001459493.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/religiousactivities.html", note:"" },
+
+    { id:"journalist", en:"Journalist", pt:"Jornalista", jp:"報道", group:"trabalho", em:"📰",
+      desc:"Atividades de cobertura jornalística sob contrato com organizações de notícias estrangeiras. Ex.: repórteres e cinegrafistas de agências de notícias estrangeiras.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist de documentos (Categoria 1 e 2)", BASE+"/isa/content/001365760.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004096.pdf", xlsx:BASE+"/isa/content/930004097.xlsx", sample:BASE+"/isa/content/001459489.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/journalist.html", note:"" },
+
+    { id:"highlyskilled", en:"Highly Skilled Professional", pt:"Profissional Altamente Qualificado", jp:"高度専門職", group:"trabalho", em:"⭐",
+      desc:"Nº 1: para estrangeiros com capacidades profissionais elevadas, avaliadas por sistema de pontos (formação, experiência, renda etc.) — mínimo de 70 pontos. Nº 2: concedido após um período sob o Nº 1; remove o limite de prazo de estadia (torna-se indefinido) e amplia as atividades permitidas.",
+      stay:"Nº 1: definido conforme a atividade-base. Nº 2: indefinido (無期限).", cats:false,
+      checklists:[["Não há um checklist único — o formulário e os documentos variam conforme a atividade-base (professor, pesquisa, transferência intraempresa, tecnologia/humanidades/negócios internacionais, jurídico/contábil, médico, ou gestão de negócios).", ""]],
+      form:{
+        pdf:BASE+"/isa/content/930004094.pdf", xlsx:BASE+"/isa/content/930004095.xlsx",
+        note:"Formulário do modelo \"N\" (Pesquisa/Tecnologia-Humanidades); existem outros modelos (I, L, U, M) conforme a atividade-base — veja a fonte oficial."
+      },
+      other:[
+        ["Modelo \"I\" (Professor) — PDF", BASE+"/isa/content/930004092.pdf"],
+        ["Modelo \"L\" (Transferência intraempresa) — PDF", BASE+"/isa/content/930004096.pdf"],
+        ["Modelo \"U\" (Jurídico/Contábil ou Médico) — PDF", BASE+"/isa/content/930004118.pdf"],
+        ["Modelo \"M\" (Gestão de negócios) — PDF", BASE+"/isa/content/930004098.pdf"],
+        ["Tabela de cálculo de pontos", BASE+"/isa/content/930001673.xls"],
+        ["Tabela de pontos (inglês)", BASE+"/isa/content/001398888.xls"],
+        ["Exemplos de documentos comprobatórios por item de pontuação", BASE+"/isa/content/001419077.pdf"],
+      ],
+      src:BASE+"/isa/applications/status/designatedactivities02_00004.html",
+      note:"A renovação exige ter 70 pontos ou mais no momento do PEDIDO — não é necessário manter 70 pontos o tempo todo durante a residência. Página-índice do fluxo: "+BASE+"/isa/applications/status/newimmiact_3_procedure_index.html" },
+
+    { id:"businessmanager", en:"Business Manager", pt:"Gestão e Administração de Negócios", jp:"経営・管理", group:"trabalho", em:"💼",
+      desc:"Atividade de administrar um negócio no Japão, ou de se dedicar à gestão desse negócio (exceto atividades que só podem ser exercidas por quem tem a qualificação de \"Serviços Jurídicos e Contábeis\"). Ex.: dirigentes e gestores de empresas.",
+      stay:"5 anos, 3 anos, 1 ano, 6 meses, 4 meses ou 3 meses.", cats:true,
+      checklists:[["Checklist de renovação", BASE+"/isa/content/001448312.pdf"],
+                  ["Aviso: documentos adicionais para Categorias 3/4 (em vigor desde 15/04/2026)", BASE+"/isa/content/001460235.pdf"]],
+      form:{pdf:BASE+"/isa/content/001448693.pdf", xlsx:BASE+"/isa/content/001448694.xlsx", sample:BASE+"/isa/content/001459446.pdf"},
+      other:[
+        ["Declaração sobre o representante da instituição (exigida se o requerente atua em gestão)", BASE+"/isa/content/001460262.pdf"],
+        ["Explicação sobre licenças/autorizações necessárias", BASE+"/isa/content/001448315.pdf"],
+        ["Explicação sobre capacidade em japonês", BASE+"/isa/content/001448317.pdf"],
+        ["Explicação sobre cumprimento de obrigações fiscais/previdenciárias", BASE+"/isa/content/001448319.pdf"],
+        ["Lista de \"empresas que atendem certas condições\" (Categoria 1)", BASE+"/isa/content/930004712.pdf"],
+      ],
+      src:BASE+"/isa/applications/status/businessmanager.html",
+      note:"Revisão do regulamento em vigor desde 16/10/2025 — detalhes em "+BASE+"/isa/applications/resources/10_00237.html" },
+
+    { id:"legalaccounting", en:"Legal/Accounting Services", pt:"Serviços Jurídicos e Contábeis", jp:"法律・会計業務", group:"trabalho", em:"⚖️",
+      desc:"Serviço jurídico ou contábil que, por lei, só pode ser realizado por advogado estrangeiro registrado, contador público estrangeiro ou outra pessoa legalmente qualificada. Ex.: advogados, contadores públicos.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:false,
+      checklists:[["Checklist de renovação", BASE+"/isa/content/001365781.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004118.pdf", xlsx:BASE+"/isa/content/930004119.xlsx", sample:BASE+"/isa/content/001459443.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/legalaccountingservices.html", note:"" },
+
+    { id:"medicalservices", en:"Medical Services", pt:"Serviços Médicos", jp:"医療", group:"trabalho", em:"🏥",
+      desc:"Serviço médico que, por lei, só pode ser realizado por médico, dentista ou outra pessoa legalmente qualificada. Ex.: médicos, dentistas, enfermeiros.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist de renovação (Categoria 1 = médico/dentista, Categoria 2 = demais profissionais)", BASE+"/isa/content/001365702.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004118.pdf", xlsx:BASE+"/isa/content/930004119.xlsx", sample:BASE+"/isa/content/001459440.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/medicalservices.html",
+      note:"Em renovação após mudança de emprego, a página exige documento adicional sobre a nova instituição empregadora." },
+
+    { id:"researcher", en:"Researcher", pt:"Pesquisador", jp:"研究", group:"trabalho", em:"🔬",
+      desc:"Atividade de pesquisa com base em contrato com instituição pública ou privada japonesa (excluindo o que já se enquadra em \"Professor\"). Ex.: pesquisadores de órgãos governamentais ou empresas privadas.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist de renovação (comum a todas as categorias)", BASE+"/isa/content/001460241.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004094.pdf", xlsx:BASE+"/isa/content/930004095.xlsx", sample:BASE+"/isa/content/001460073.pdf",
+            note:"Em caso de transferência interna (転勤), use este formulário: PDF "+BASE+"/isa/content/930004096.pdf"},
+      other:[
+        ["Declaração sobre o representante da instituição (Categorias 3/4, desde 15/04/2026)", BASE+"/isa/content/001460262.pdf"],
+        ["Lista de \"empresas que atendem certas condições\" (Categoria 1)", BASE+"/isa/content/930004712.pdf"],
+        ["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"],
+      ],
+      src:BASE+"/isa/applications/status/researcher.html", note:"" },
+
+    { id:"instructor", en:"Instructor", pt:"Educação (Instrutor)", jp:"教育", group:"trabalho", em:"👩‍🏫",
+      desc:"Ensino de idiomas ou outras atividades de ensino em escolas de ensino fundamental, médio, técnicas ou equivalentes no Japão. Ex.: professores de língua estrangeira em escolas.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:false,
+      checklists:[["Checklist de documentos", BASE+"/isa/content/001367669.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004092.pdf", xlsx:BASE+"/isa/content/930004093.xlsx", sample:BASE+"/isa/content/001460059.pdf"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/instructor.html", note:"" },
+
+    { id:"gijinkoku", en:"Engineer/Specialist in Humanities/International Services", pt:"Engenheiro / Especialista em Humanidades / Serviços Internacionais", jp:"技術・人文知識・国際業務", group:"trabalho", em:"💻",
+      desc:"Trabalho que exige conhecimento técnico ou humanístico especializado, com base em contrato com organização japonesa, ou atividades que exigem sensibilidade cultural estrangeira. Ex.: engenheiros, intérpretes, designers, professores de idiomas, profissionais de marketing.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist comum", BASE+"/isa/content/001367009.pdf"], ["Checklist adicional — Categorias 3 e 4", BASE+"/isa/content/001437255.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004094.pdf", xlsx:BASE+"/isa/content/930004095.xlsx", sample:BASE+"/isa/content/001460062.pdf"},
+      other:[
+        ["Declaração sobre o representante da instituição", BASE+"/isa/content/001460262.pdf"],
+        ["Termo de compromisso de trabalho por dispatch — empresa de origem", BASE+"/isa/content/001457161.docx"],
+        ["Termo de compromisso de trabalho por dispatch — empresa de destino", BASE+"/isa/content/001457162.docx"],
+      ],
+      src:BASE+"/isa/applications/status/gijinkoku.html",
+      note:"Desde 15/04/2026, quem exerce função com foco em comunicação interpessoal (Categorias 3/4) deve comprovar nível de idioma equivalente a CEFR B2 ou superior." },
+
+    { id:"intracompany", en:"Intra-company Transferee", pt:"Transferência Intraempresarial", jp:"企業内転勤", group:"trabalho", em:"🔁",
+      desc:"Atividades da categoria \"Engenheiro/Humanidades/Serviços Internacionais\" exercidas por funcionário de um estabelecimento estrangeiro de uma organização que também tem sede/filial no Japão, quando transferido por período determinado para o Japão.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist comum a todas as categorias", BASE+"/isa/content/001366563.pdf"], ["Checklist adicional — Categorias 3 e 4", BASE+"/isa/content/001366564.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004096.pdf", xlsx:BASE+"/isa/content/930004097.xlsx", sample:BASE+"/isa/content/001460065.pdf"},
+      other:[["Lista de \"empresas que atendem certas condições\"", BASE+"/isa/content/930004712.pdf"], ["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/intracompanytransfee.html",
+      note:"Mudança nos documentos exigidos em vigor desde 01/04/2026 — ver "+BASE+"/isa/content/001457117.pdf" },
+
+    { id:"nursingcare", en:"Nursing Care", pt:"Cuidados de Enfermagem (Kaigo)", jp:"介護", group:"trabalho", em:"🧑‍⚕️",
+      desc:"Cuidados de enfermagem/assistência (\"kaigo\") ou instrução sobre isso, exercidos por pessoa habilitada como Certified Care Worker (介護福祉士), sob contrato com instituição japonesa.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:false,
+      checklists:[["Checklist de renovação", BASE+"/isa/content/001460245.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004094.pdf", xlsx:BASE+"/isa/content/930004095.xlsx", sample:BASE+"/isa/content/001459430.pdf"},
+      other:[["Declaração do representante da instituição", BASE+"/isa/content/001460262.pdf"], ["Declaração de transferência de habilidades", BASE+"/isa/content/930005084.docx"]],
+      src:BASE+"/isa/applications/status/nursingcare.html", note:"" },
+
+    { id:"entertainer", en:"Entertainer", pt:"Entretenimento", jp:"興行", group:"trabalho", em:"🎤",
+      desc:"Atividades de teatro, artes performáticas, música, esporte, entre outros (\"興行\"), ou outras atividades artísticas (exceto gestão de negócios). Ex.: atores, cantores, dançarinos, atletas profissionais.",
+      stay:"3 anos, 1 ano, 6 meses, 3 meses ou 30 dias.", cats:false,
+      checklists:[["Checklist de renovação (comum às 4 subcategorias de critério)", BASE+"/isa/content/001399945.pdf"]],
+      form:{pdf:BASE+"/isa/content/001399941.pdf", xlsx:BASE+"/isa/content/001399942.xlsx"},
+      other:[["Q&A sobre pedidos de visto de trabalho", BASE+"/isa/content/001344550.pdf"]],
+      src:BASE+"/isa/applications/status/entertainer.html",
+      note:"Este status se divide em 4 subcategorias por critério de atividade — veja a página oficial para identificar a sua exatamente." },
+
+    { id:"skilledlabor", en:"Skilled Labor", pt:"Trabalho Especializado", jp:"技能", group:"trabalho", em:"🔧",
+      desc:"\"Trabalho que exige perícia/habilidade técnica de um campo industrial específico, com base em contrato com instituição pública ou privada japonesa.\" Ex.: cozinheiros de culinária estrangeira, instrutores esportivos, pilotos de aeronave, artesãos de metais preciosos.",
+      stay:"5 anos, 3 anos, 1 ano ou 3 meses.", cats:true,
+      checklists:[["Checklist — Categoria de cozinheiros/culinária", BASE+"/isa/content/001460251.pdf"], ["Checklist — demais áreas técnicas", BASE+"/isa/content/001460257.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004094.pdf", xlsx:BASE+"/isa/content/930004095.xlsx"},
+      other:[["Declaração do representante da instituição", BASE+"/isa/content/001460262.pdf"], ["Lista de \"empresas que atendem certas condições\"", BASE+"/isa/content/930004712.pdf"]],
+      src:BASE+"/isa/applications/status/skilledlabor.html", note:"" },
+
+    { id:"ssw", en:"Specified Skilled Worker", pt:"Trabalhador com Habilidades Específicas", jp:"特定技能", group:"trabalho", em:"🛠️",
+      desc:"Nº1: trabalho sob contrato com instituição designada, em campo industrial com carência de mão de obra, exigindo habilidade técnica considerável. Nº2: mesma estrutura, para funções de habilidade técnica apurada/proficiente. 16 campos: cuidados de idosos, limpeza predial, construção, indústria naval, manutenção automotiva, aviação, hotelaria, agricultura, pesca, alimentação, entre outros.",
+      stay:"Nº1: até 3 anos por vez (total acumulado em princípio dentro de 5 anos). Nº2: 3 anos, 2 anos, 1 ano ou 6 meses.", cats:false,
+      checklists:[["Nº1 — Tabela 1 (capa)", BASE+"/isa/content/001463538.xlsx"], ["Nº1 — Todos os campos exceto agro/pesca", BASE+"/isa/content/001463531.xlsx"],
+                  ["Nº2 — Tabela 1 (capa)", BASE+"/isa/content/001459974.xlsx"], ["Nº2 — Todos os campos exceto agro/pesca", BASE+"/isa/content/001446611.xlsx"]],
+      form:{xlsx:BASE+"/isa/content/930003861.xlsx", sample:BASE+"/isa/content/001444256.pdf", note:"Este formulário só existe em Excel (não há PDF em branco oficial, apenas um exemplo preenchido em PDF)."},
+      other:[["Resumo por campo específico", BASE+"/isa/applications/ssw/nyuukokukanri07_00201.html"], ["Lista de formulários por campo", BASE+"/isa/applications/ssw/10_00020.html"]],
+      src:BASE+"/isa/applications/status/specifiedskilledworker.html",
+      note:"Para o Nº1, o período total acumulado deve, em princípio, ficar dentro de 5 anos — isso pode limitar o prazo concedido em cada renovação." },
+
+    { id:"student", en:"Student", pt:"Estudante", jp:"留学", group:"estudo", em:"📚",
+      desc:"Atividades educacionais em universidades, faculdades técnicas, ensino médio e outras instituições de ensino japonesas designadas.",
+      stay:"Até 4 anos e 3 meses, definido individualmente pelo Ministro da Justiça.", cats:true,
+      checklists:[
+        ["Universidades/Faculdades — Instituição designada Classe I/II", BASE+"/isa/content/001463617.pdf"],
+        ["Universidades/Faculdades — Instituição não designada", BASE+"/isa/content/001463618.pdf"],
+        ["Escolas técnicas/diversas — Classe I", BASE+"/isa/content/001463619.pdf"],
+        ["Escolas técnicas/diversas — Classe II", BASE+"/isa/content/001463620.pdf"],
+        ["Escolas de língua japonesa — Classe I", BASE+"/isa/content/001463622.pdf"],
+        ["Escolas de língua japonesa — Classe II", BASE+"/isa/content/001463623.pdf"],
+        ["Ensino fundamental/médio", BASE+"/isa/content/001463625.pdf"],
+      ],
+      form:{pdf:BASE+"/isa/content/930004106.pdf", xlsx:BASE+"/isa/content/930004107.xlsx", sample:BASE+"/isa/content/001460077.pdf"},
+      other:[["Diretrizes gerais", BASE+"/isa/content/001461504.pdf"], ["Declaração de apoio de custos", BASE+"/isa/content/001418440.pdf"], ["Lista de certificação de bolsas", BASE+"/isa/content/001417508.pdf"]],
+      src:BASE+"/isa/applications/status/student.html", note:"" },
+
+    { id:"trainee", en:"Trainee", pt:"Estagiário / Treinando", jp:"研修", group:"estudo", em:"📋",
+      desc:"Aquisição de habilidades técnicas etc. aceita por instituição pública ou privada japonesa (exceto o que já se enquadra em \"Estagiário Técnico\" ou \"Estudante\").",
+      stay:"1 ano, 6 meses ou 3 meses (2 anos para casos médicos específicos com equipamento de irradiação de partículas).", cats:false,
+      checklists:[["Cronograma de execução do treinamento", BASE+"/isa/content/930002569.pdf"], ["Relatório de situação de treinamento/vida", BASE+"/isa/content/930002571.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004108.pdf", xlsx:BASE+"/isa/content/001423216.xlsx"},
+      other:[], src:BASE+"/isa/applications/status/trainee.html", note:"" },
+
+    { id:"technicalintern", en:"Technical Intern Training", pt:"Treinamento Técnico Prático (Estagiário Técnico)", jp:"技能実習", group:"estudo", em:"🧰",
+      desc:"Treinamento e trabalho relacionado a habilidades técnicas, com base em plano de treinamento técnico aprovado. Dividido em Nº1, Nº2 e Nº3 (cada um com subtipos i/ro).",
+      stay:"Nº1: até 1 ano. Nº2 e Nº3: até 2 anos cada.", cats:false,
+      checklists:[], form:{pdf:BASE+"/isa/content/930004112.pdf", xlsx:BASE+"/isa/content/930004113.xlsx"},
+      other:[["Caso especial (Mianmar) — explicação", BASE+"/isa/content/001379908.pdf"]],
+      src:BASE+"/isa/applications/status/technicalinterntraining.html",
+      note:"A página descreve a renovação como procedimento padrão para quem já tem esse status e continua a mesma atividade." },
+
+    { id:"dependent", en:"Dependent", pt:"Dependente (Cônjuge ou Filho Dependente)", jp:"家族滞在", group:"familia", em:"👨‍👩‍👧",
+      desc:"Atividades cotidianas exercidas como cônjuge ou filho dependente de um estrangeiro que reside no Japão sob determinados status (Professor, Artista, Transferido Intraempresa, Pesquisador, Estudante, entre outros).",
+      stay:"Definido individualmente pelo Ministro da Justiça (não superior a 5 anos).", cats:false,
+      checklists:[["Checklist de renovação", BASE+"/isa/content/001395563.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004110.pdf", xlsx:BASE+"/isa/content/930004111.xlsx", sample:BASE+"/isa/content/001459535.pdf"},
+      other:[], src:BASE+"/isa/applications/status/dependent.html", note:"" },
+
+    { id:"spousejapanese", en:"Spouse or Child of Japanese National", pt:"Cônjuge ou Filho de Nacional Japonês", jp:"日本人の配偶者等", group:"familia", em:"💍",
+      desc:"Cônjuge de nacional japonês, filho adotivo especial (adoção plena) de nacional japonês, ou pessoa nascida como filho de nacional japonês.",
+      stay:"5 anos, 3 anos, 1 ano ou 6 meses.", cats:false,
+      checklists:[["Checklist — caso cônjuge", BASE+"/isa/content/001426542.pdf"], ["Checklist — caso filho/adotivo", BASE+"/isa/content/001426549.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004114.pdf", xlsx:BASE+"/isa/content/930004115.xlsx", sample:BASE+"/isa/content/001459549.pdf"},
+      other:[
+        ["Termo de garantia/fiador (japonês)", BASE+"/isa/content/001373949.pdf"],
+        ["Termo de garantia/fiador (inglês)", BASE+"/isa/content/001373950.pdf"],
+        ["Questionário (português)", BASE+"/isa/content/930003540.pdf"],
+        ["Questionário (inglês)", BASE+"/isa/content/930003535.pdf"],
+      ],
+      src:BASE+"/isa/applications/status/spouseorchildofjapanese.html", note:"" },
+
+    { id:"spousepr", en:"Spouse or Child of Permanent Resident", pt:"Cônjuge ou Filho de Residente Permanente", jp:"永住者の配偶者等", group:"familia", em:"💑",
+      desc:"Cônjuge de um Residente Permanente (永住者) ou Residente Permanente Especial (特別永住者), ou filho nascido no Japão de residente permanente que continua residindo no Japão desde então.",
+      stay:"5 anos, 3 anos, 1 ano ou 6 meses.", cats:false,
+      checklists:[["Checklist de renovação", BASE+"/isa/content/001426555.pdf"]],
+      form:{pdf:BASE+"/isa/content/930004114.pdf", xlsx:BASE+"/isa/content/930004115.xlsx", sample:BASE+"/isa/content/001459559.pdf"},
+      other:[["Termo de garantia/fiador (japonês)", BASE+"/isa/content/001373949.pdf"], ["Termo de garantia/fiador (inglês)", BASE+"/isa/content/001373950.pdf"]],
+      src:BASE+"/isa/applications/status/spouseorchildofpermanentresident.html", note:"" },
+
+    { id:"longtermresident", en:"Long-Term Resident", pt:"Residente de Longo Prazo", jp:"定住者", group:"familia", em:"🏠",
+      desc:"Reconhecido pelo Ministro da Justiça por período determinado, considerando circunstâncias especiais — inclui refugiados reassentados, descendentes de japoneses (Nikkeijin) de 3ª geração, cônjuges de descendentes de 2ª/3ª geração, filhos menores solteiros dependentes, e adotados menores de 6 anos dependentes.",
+      stay:"5 anos, 3 anos, 1 ano, 6 meses, ou período individualmente designado (não superior a 5 anos).", cats:false,
+      checklists:[], form:{}, other:[],
+      src:BASE+"/isa/applications/status/longtermresident.html",
+      note:"Esta é uma página-índice: os checklists e formulários de renovação ficam em 5 subpáginas específicas por categoria de Long-Term Resident. Acesse a fonte oficial acima e escolha o seu caso." },
+
+    { id:"culturalactivities", en:"Cultural Activities", pt:"Atividades Culturais", jp:"文化活動", group:"outras", em:"🎏",
+      desc:"Atividade acadêmica ou artística sem remuneração, pesquisa especializada sobre cultura/técnicas peculiares ao Japão, ou aprendizado dessas atividades sob orientação de especialista (ikebana, cerimônia do chá, judô, arquitetura japonesa, caligrafia, dança clássica, culinária, música tradicional, etc.).",
+      stay:"3 anos, 1 ano, 6 meses ou 3 meses.", cats:false,
+      checklists:[],
+      form:{pdf:BASE+"/isa/content/930004100.pdf", xlsx:BASE+"/isa/content/930004101.xlsx"},
+      other:[], src:BASE+"/isa/applications/status/culturalactivities.html",
+      note:"O formulário é o mesmo nas duas subcategorias oficiais (pesquisa/atividade sem remuneração vs. aprendizado sob orientação); os documentos exigidos variam — consulte a fonte oficial para identificar seu caso exato." },
+
+    { id:"temporaryvisitor", en:"Temporary Visitor", pt:"Visitante de Curto Prazo", jp:"短期滞在", group:"outras", em:"✈️",
+      desc:"Turismo, recuperação de saúde, prática esportiva, visita a parentes, participação em cursos/reuniões, contatos de negócios e atividades similares de curto prazo.",
+      stay:"90 dias, 30 dias, ou até 15 dias.", cats:false,
+      checklists:[], form:{pdf:BASE+"/isa/content/930004090.pdf", xlsx:BASE+"/isa/content/930004091.xlsx"}, other:[],
+      src:BASE+"/isa/applications/status/temporaryvisitor.html",
+      note:"⚠️ A renovação deste status NÃO é concedida rotineiramente. Texto oficial: \"a renovação do status Visitante de Curto Prazo é, em princípio, concedida apenas em casos de circunstâncias humanitárias verdadeiramente inevitáveis ou circunstâncias especiais equivalentes, como a necessidade de tratamento médico.\"" },
+
+    { id:"designatedactivities", en:"Designated Activities", pt:"Atividades Designadas", jp:"特定活動", group:"outras", em:"📌",
+      desc:"Atividades que o Ministro da Justiça designa especificamente para cada estrangeiro individualmente — dezenas de subcategorias com regras próprias (empregados domésticos de diplomatas, working holiday, cuidadores sob EPA, atletas amadores, tratamento médico de longa duração, nômades digitais, recém-formados em busca de emprego, etc.).",
+      stay:"5 anos, 3 anos, 1 ano, 6 meses, 3 meses, ou período individualmente designado (não superior a 5 anos).", cats:false,
+      checklists:[], form:{}, other:[],
+      src:BASE+"/isa/applications/status/designatedactivities.html",
+      note:"Esta é uma página-índice que linka para ~30 subpáginas, uma por atividade específica (cada estrangeiro tem sua atividade anotada num \"指定書\" grudado no passaporte). Acesse a fonte oficial acima para encontrar a sua." },
+  ];
+
+  const CATEGORY_NOTE = "Além destas categorias, \"Residente Permanente\" (永住者) não passa por este procedimento — o status não tem prazo de validade, só o cartão de residência é renovado periodicamente. \"Diplomata\" (外交) segue trâmite específico via canais diplomáticos.";
+
+  function esc(s) { return String(s || "").replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c])); }
+  function show(id, on) { document.getElementById(id).classList.toggle("hide", !on); }
+
+  /* ===================================================================
+     NAVEGAÇÃO / RENDERIZAÇÃO
+     =================================================================== */
+  const App = {
+    screen: "intro",
+    lastCategory: null,
+
+    goCategories() {
+      this.screen = "categories";
+      show("screen-intro", false); show("screen-detail", false); show("screen-filler", false); show("screen-categories", true);
+      show("topback", true);
+      document.getElementById("cat-search").value = "";
+      this.renderCategoryList("");
+      window.scrollTo(0, 0);
+    },
+
+    filterCategories(q) { this.renderCategoryList(q); },
+
+    renderCategoryList(q) {
+      const query = (q || "").trim().toLowerCase();
+      const el = document.getElementById("cat-list");
+      let html = "";
+      for (const groupKey of Object.keys(GROUPS)) {
+        const items = CATEGORIES.filter(c => c.group === groupKey && (
+          !query ||
+          c.pt.toLowerCase().includes(query) || c.en.toLowerCase().includes(query) ||
+          c.jp.includes(query) || c.desc.toLowerCase().includes(query)
+        ));
+        if (!items.length) continue;
+        html += `<div class="sect-title">${GROUPS[groupKey]}</div>`;
+        for (const c of items) {
+          html += `
+            <button class="cat-item" onclick="App.goDetail('${c.id}')">
+              <span class="em">${c.em}</span>
+              <span class="t">${esc(c.pt)}<span class="jp">${esc(c.jp)} · ${esc(c.en)}</span></span>
+              <span class="arr">›</span>
+            </button>`;
+        }
+      }
+      if (!html) html = `<p class="muted" style="text-align:center; padding:20px 0;">Nenhuma categoria encontrada para "${esc(q)}".</p>`;
+      if (!query) html += `<div class="callout" style="margin-top:6px;">${esc(CATEGORY_NOTE)}</div>`;
+      el.innerHTML = html;
+    },
+
+    goDetail(id) {
+      const c = CATEGORIES.find(x => x.id === id);
+      if (!c) return;
+      this.lastCategory = c;
+      this.screen = "detail";
+      show("screen-intro", false); show("screen-categories", false); show("screen-filler", false);
+      const el = document.getElementById("screen-detail");
+      el.innerHTML = this.renderDetail(c);
+      show("screen-detail", true); show("topback", true);
+      window.scrollTo(0, 0);
+    },
+
+    renderDetail(c) {
+      let html = `<div class="card fade">
+        <button class="back-link" onclick="App.goCategories()">← Todas as categorias</button>
+        <div class="cat-badge" style="margin-top:10px;">${c.em} ${esc(c.jp)}</div>
+        <h2>${esc(c.pt)}</h2>
+        <p class="muted" style="margin-top:-6px;">${esc(c.en)}</p>
+        <p>${esc(c.desc)}</p>
+        <div class="notice info">📅 <b>Prazo de estadia:</b> ${esc(c.stay)}</div>
+        ${c.cats ? `<div class="notice info">🏢 Esta categoria usa a classificação de <b>Categoria 1–4</b> da empresa/instituição — veja a explicação na tela inicial.</div>` : ""}
+        ${c.note ? `<div class="callout warn">${esc(c.note)}</div>` : ""}
+      </div>`;
+
+      // formulário principal
+      if (c.form && (c.form.pdf || c.form.xlsx)) {
+        html += `<div class="card">
+          <div class="doc-group-h">📝 Formulário de renovação (在留期間更新許可申請書)</div>
+          <div class="doc">
+            <div class="doc-top"><div class="doc-name">Formulário oficial</div></div>
+            <div class="dl-row">
+              ${c.form.pdf ? `<a class="dl" href="${c.form.pdf}" target="_blank" rel="noopener">⬇ PDF</a>` : ""}
+              ${c.form.xlsx ? `<a class="dl alt" href="${c.form.xlsx}" target="_blank" rel="noopener">⬇ Excel</a>` : ""}
+              ${c.form.sample ? `<a class="dl alt" href="${c.form.sample}" target="_blank" rel="noopener">👁 Exemplo preenchido</a>` : ""}
+            </div>
+            ${c.form.note ? `<div class="doc-note">${esc(c.form.note)}</div>` : ""}
+            ${c.form.pdf ? `<button class="btn btn-primary btn-sm" style="margin-top:10px;" onclick="App.goFiller('${c.form.pdf}')">✏️ Preencher este PDF na hora</button>` : ""}
+          </div>
+        </div>`;
+      }
+
+      // checklists
+      if (c.checklists && c.checklists.length) {
+        html += `<div class="card"><div class="doc-group-h">📋 Checklist de documentos exigidos</div>`;
+        for (const [label, url] of c.checklists) {
+          html += `<div class="doc"><div class="doc-top"><div class="doc-name">${esc(label)}</div></div>
+            ${url ? `<div class="dl-row"><a class="dl" href="${url}" target="_blank" rel="noopener">⬇ Abrir PDF</a></div>` : ""}
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      // outros documentos
+      if (c.other && c.other.length) {
+        html += `<div class="card"><div class="doc-group-h">📎 Outros documentos citados na página oficial</div>`;
+        for (const [label, url] of c.other) {
+          html += `<div class="doc"><div class="doc-top"><div class="doc-name">${esc(label)}</div></div>
+            <div class="dl-row"><a class="dl alt" href="${url}" target="_blank" rel="noopener">⬇ Abrir</a></div>
+          </div>`;
+        }
+        html += `</div>`;
+      }
+
+      html += `<div class="card">
+        <div class="sect-title">Fonte oficial</div>
+        <a class="src-link" href="${c.src}" target="_blank" rel="noopener">${c.src}</a>
+        <p class="muted" style="margin-top:10px;">Confira sempre a página oficial acima — regras e documentos exigidos mudam com frequência.</p>
+      </div>`;
+
+      return html;
+    },
+
+    goFiller(prefillUrl) {
+      this.screen = "filler";
+      show("screen-intro", false); show("screen-categories", false); show("screen-detail", false); show("screen-filler", true);
+      show("topback", true);
+      const introCard = document.getElementById("filler-intro");
+      let hint = introCard.querySelector("#filler-hint");
+      if (!hint) {
+        hint = document.createElement("div");
+        hint.id = "filler-hint";
+        hint.className = "notice warn";
+        introCard.insertBefore(hint, document.getElementById("dropzone"));
+      }
+      if (prefillUrl) {
+        hint.innerHTML = `📥 Baixe primeiro o formulário oficial (<a href="${prefillUrl}" target="_blank" rel="noopener" style="color:inherit;">${prefillUrl.split("/").pop()}</a>) e depois carregue o <b>mesmo arquivo</b> aqui embaixo.`;
+        hint.classList.remove("hide");
+      } else {
+        hint.classList.add("hide");
+      }
+      window.scrollTo(0, 0);
+    },
+
+    goBack() {
+      if (this.screen === "filler") { this.screen = this.lastCategory ? "detail" : "categories"; }
+      if (this.screen === "detail") { this.goCategories(); return; }
+      if (this.screen === "categories" || this.screen === "filler") {
+        this.screen = "intro";
+        show("screen-intro", true); show("screen-categories", false); show("screen-detail", false); show("screen-filler", false);
+        show("topback", false);
+        window.scrollTo(0, 0);
+        return;
+      }
+    },
+  };
+  window.App = App;
+  </script>
+
+  <!-- pdf.js (módulo ES) — usado só para RENDERIZAR o PDF na tela; hospedado localmente -->
+  <script type="module">
+    import * as pdfjsLib from "./vendor/pdf.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "./vendor/pdf.worker.min.mjs";
+    window.pdfjsLib = pdfjsLib;
+    window.dispatchEvent(new Event("pdfjs-ready"));
+  </script>
+
+  <script>
+  /* ===================================================================
+     FERRAMENTA DE PREENCHIMENTO DE PDF
+     100% no navegador: pdf.js renderiza as páginas em <canvas>; o
+     usuário clica para adicionar caixas de texto; pdf-lib (+ fontkit,
+     com uma fonte Noto Sans JP para suportar japonês) grava o texto por
+     cima do PDF original e gera o arquivo final para download.
+     =================================================================== */
+  const NOTO_JP_URL = "vendor/NotoSansJP.ttf";
+
+  const Filler = {
+    file: null,
+    origBytes: null,
+    pdfDoc: null,        // documento pdf.js (renderização)
+    numPages: 0,
+    pageIndex: 0,         // 0-based
+    zoomLevel: 1.4,
+    addMode: false,
+    defaultSize: 10,
+    pageSizesPt: {},      // cache: pageIndex -> {w,h} em pontos PDF
+    boxesByPage: {},      // pageIndex -> [{x,y,text,size}]  (x,y em pontos PDF, a partir do topo)
+    fontBytesPromise: null,
+
+    async onFile(file) {
+      if (!file || file.type !== "application/pdf") { alert("Escolha um arquivo PDF."); return; }
+      this.file = file;
+      this.origBytes = await file.arrayBuffer();
+      this.boxesByPage = {}; this.pageSizesPt = {}; this.pageIndex = 0;
+
+      if (!window.pdfjsLib) {
+        await new Promise(res => window.addEventListener("pdfjs-ready", res, { once: true }));
+      }
+      const loadingTask = window.pdfjsLib.getDocument({ data: this.origBytes.slice(0) });
+      this.pdfDoc = await loadingTask.promise;
+      this.numPages = this.pdfDoc.numPages;
+
+      document.getElementById("filler-intro").classList.add("hide");
+      document.getElementById("filler-editor").classList.remove("hide");
+      await this.renderPage(0);
+      this.prefetchFont();
+    },
+
+    prefetchFont() {
+      const statusEl = document.getElementById("font-status");
+      if (!this.fontBytesPromise) {
+        if (statusEl) statusEl.textContent = "Carregando fonte japonesa para o preenchimento (uma vez só, ~9MB)…";
+        this.fontBytesPromise = fetch(NOTO_JP_URL).then(r => r.arrayBuffer()).then(buf => {
+          if (statusEl) statusEl.textContent = "Fonte carregada ✓";
+          return buf;
+        }).catch(err => {
+          if (statusEl) statusEl.textContent = "Não foi possível carregar a fonte japonesa — o preenchimento com caracteres japoneses pode falhar.";
+          throw err;
+        });
+      }
+      return this.fontBytesPromise;
+    },
+
+    async renderPage(idx) {
+      this.pageIndex = idx;
+      const page = await this.pdfDoc.getPage(idx + 1);
+      const viewport = page.getViewport({ scale: this.zoomLevel });
+      const viewportUnscaled = page.getViewport({ scale: 1 });
+      this.pageSizesPt[idx] = { w: viewportUnscaled.width, h: viewportUnscaled.height };
+
+      const stage = document.getElementById("pdf-stage");
+      stage.innerHTML = "";
+      const wrap = document.createElement("div");
+      wrap.className = "pdf-page-wrap";
+      wrap.style.width = viewport.width + "px";
+      wrap.style.height = viewport.height + "px";
+
+      const canvas = document.createElement("canvas");
+      canvas.width = viewport.width; canvas.height = viewport.height;
+      wrap.appendChild(canvas);
+
+      const layer = document.createElement("div");
+      layer.className = "text-layer";
+      layer.id = "text-layer";
+      layer.addEventListener("click", (e) => this.onLayerClick(e));
+      wrap.appendChild(layer);
+
+      stage.appendChild(wrap);
+      await page.render({ canvasContext: canvas.getContext("2d"), viewport }).promise;
+
+      this.renderBoxes();
+      document.getElementById("tb-pageinfo").textContent = (idx + 1) + " / " + this.numPages;
+      document.getElementById("tb-prev").disabled = idx === 0;
+      document.getElementById("tb-next").disabled = idx === this.numPages - 1;
+    },
+
+    renderBoxes() {
+      const layer = document.getElementById("text-layer");
+      layer.querySelectorAll(".txt-box-wrap").forEach(b => b.remove());
+      const boxes = this.boxesByPage[this.pageIndex] || [];
+      boxes.forEach((b, i) => this.mountBox(b, i));
+    },
+
+    mountBox(b, i) {
+      const layer = document.getElementById("text-layer");
+
+      const wrap = document.createElement("div");
+      wrap.className = "txt-box-wrap";
+      wrap.style.left = (b.x * this.zoomLevel) + "px";
+      wrap.style.top = (b.y * this.zoomLevel) + "px";
+
+      const el = document.createElement("div");
+      el.className = "txt-box";
+      el.contentEditable = "true";
+      el.style.fontSize = (b.size * this.zoomLevel) + "px";
+      el.textContent = b.text || "";
+      // note: só o texto digitado no .txt-box (não o botão × do wrapper) vira b.text
+      el.addEventListener("input", () => { b.text = el.textContent; });
+      wrap.appendChild(el);
+
+      const del = document.createElement("span");
+      del.className = "del"; del.textContent = "×";
+      del.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const arr = this.boxesByPage[this.pageIndex];
+        arr.splice(arr.indexOf(b), 1);
+        this.renderBoxes();
+      });
+      wrap.appendChild(del);
+
+      // arrastar (pelo próprio texto — clique simples posiciona o cursor, arrastar move a caixa)
+      let dragging = false, startX, startY, origX, origY;
+      el.addEventListener("mousedown", (e) => {
+        dragging = true; startX = e.clientX; startY = e.clientY; origX = b.x; origY = b.y;
+        e.stopPropagation();
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const dx = (e.clientX - startX) / this.zoomLevel, dy = (e.clientY - startY) / this.zoomLevel;
+        b.x = origX + dx; b.y = origY + dy;
+        wrap.style.left = (b.x * this.zoomLevel) + "px"; wrap.style.top = (b.y * this.zoomLevel) + "px";
+      });
+      window.addEventListener("mouseup", () => { dragging = false; });
+      // toque (mobile)
+      el.addEventListener("touchstart", (e) => {
+        dragging = true; const t = e.touches[0]; startX = t.clientX; startY = t.clientY; origX = b.x; origY = b.y;
+        e.stopPropagation();
+      }, { passive: true });
+      window.addEventListener("touchmove", (e) => {
+        if (!dragging) return;
+        const t = e.touches[0];
+        const dx = (t.clientX - startX) / this.zoomLevel, dy = (t.clientY - startY) / this.zoomLevel;
+        b.x = origX + dx; b.y = origY + dy;
+        wrap.style.left = (b.x * this.zoomLevel) + "px"; wrap.style.top = (b.y * this.zoomLevel) + "px";
+      }, { passive: true });
+      window.addEventListener("touchend", () => { dragging = false; });
+
+      layer.appendChild(wrap);
+    },
+
+    onLayerClick(e) {
+      if (!this.addMode) return;
+      if (e.target.closest(".txt-box-wrap")) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = (e.clientX - rect.left) / this.zoomLevel;
+      const y = (e.clientY - rect.top) / this.zoomLevel;
+      const box = { x, y, text: "", size: this.defaultSize };
+      if (!this.boxesByPage[this.pageIndex]) this.boxesByPage[this.pageIndex] = [];
+      this.boxesByPage[this.pageIndex].push(box);
+      this.renderBoxes();
+      // foca a nova caixa
+      const boxes = document.querySelectorAll("#text-layer .txt-box");
+      const last = boxes[boxes.length - 1];
+      if (last) { last.focus(); }
+    },
+
+    toggleAddMode() {
+      this.addMode = !this.addMode;
+      document.getElementById("tb-add").classList.toggle("on", this.addMode);
+      const layer = document.getElementById("text-layer");
+      if (layer) layer.classList.toggle("moving", !this.addMode);
+    },
+
+    setDefaultSize(v) { this.defaultSize = parseFloat(v) || 10; },
+
+    zoomTo(z) {
+      this.zoomLevel = Math.max(0.5, Math.min(3, z));
+      this.renderPage(this.pageIndex);
+    },
+    zoom(delta) { this.zoomTo(this.zoomLevel + delta); },
+
+    prevPage() { if (this.pageIndex > 0) this.renderPage(this.pageIndex - 1); },
+    nextPage() { if (this.pageIndex < this.numPages - 1) this.renderPage(this.pageIndex + 1); },
+
+    async exportPdf(btn) {
+      const hasAnyBox = Object.values(this.boxesByPage).some(arr => arr && arr.some(b => b.text && b.text.trim()));
+      if (!hasAnyBox) { alert("Adicione algum texto antes de exportar."); return; }
+
+      const origLabel = btn ? btn.textContent : null;
+      if (btn) { btn.disabled = true; btn.textContent = "Gerando PDF…"; }
+
+      try {
+        const fontBytes = await this.prefetchFont();
+        const pdfDoc = await PDFLib.PDFDocument.load(this.origBytes.slice(0));
+        pdfDoc.registerFontkit(fontkit);
+        const font = await pdfDoc.embedFont(fontBytes, { subset: true });
+        const pages = pdfDoc.getPages();
+
+        for (const pageIdxStr of Object.keys(this.boxesByPage)) {
+          const pageIdx = parseInt(pageIdxStr, 10);
+          const boxes = this.boxesByPage[pageIdx] || [];
+          if (!boxes.length) continue;
+          const page = pages[pageIdx];
+          const { height: pageH } = page.getSize();
+          for (const b of boxes) {
+            if (!b.text || !b.text.trim()) continue;
+            const size = b.size || this.defaultSize;
+            const lines = String(b.text).split("\n");
+            lines.forEach((line, li) => {
+              const yTop = b.y + li * (size * 1.15);
+              page.drawText(line, {
+                x: b.x,
+                y: pageH - yTop - size * 0.85,
+                size,
+                font,
+                color: PDFLib.rgb(0, 0, 0),
+              });
+            });
+          }
+        }
+
+        const outBytes = await pdfDoc.save();
+        const blob = new Blob([outBytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        const baseName = (this.file && this.file.name) ? this.file.name.replace(/\.pdf$/i, "") : "formulario";
+        a.download = baseName + "-preenchido.pdf";
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert("Não foi possível gerar o PDF preenchido: " + err.message);
+      } finally {
+        if (btn) { btn.disabled = false; btn.textContent = origLabel; }
+      }
+    },
+  };
+  window.Filler = Filler;
+
+  // drag & drop no dropzone
+  window.addEventListener("DOMContentLoaded", () => {
+    const dz = document.getElementById("dropzone");
+    if (!dz) return;
+    ["dragenter", "dragover"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add("drag"); }));
+    ["dragleave", "drop"].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove("drag"); }));
+    dz.addEventListener("drop", e => {
+      const f = e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) Filler.onFile(f);
+    });
+  });
+  </script>
+</body>
+</html>
