@@ -772,6 +772,7 @@
       this.screen = "filler";
       show("screen-intro", false); show("screen-categories", false); show("screen-detail", false); show("screen-filler", true);
       show("topback", true);
+      Filler.reset();
       const introCard = document.getElementById("filler-intro");
       let hint = introCard.querySelector("#filler-hint");
       if (!hint) {
@@ -834,6 +835,25 @@
     pageSizesPt: {},      // cache: pageIndex -> {w,h} em pontos PDF
     boxesByPage: {},      // pageIndex -> [{x,y,text,size}]  (x,y em pontos PDF, a partir do topo)
     fontBytesPromise: null,
+
+    reset() {
+      // volta a ferramenta ao estado inicial (dropzone), sem descartar a fonte japonesa já baixada
+      this.file = null; this.origBytes = null; this.pdfDoc = null;
+      this.numPages = 0; this.pageIndex = 0; this.addMode = false;
+      this.boxesByPage = {}; this.pageSizesPt = {};
+
+      const fileInput = document.getElementById("file-input");
+      if (fileInput) fileInput.value = "";
+      const stage = document.getElementById("pdf-stage");
+      if (stage) stage.innerHTML = "";
+      const addBtn = document.getElementById("tb-add");
+      if (addBtn) addBtn.classList.remove("on");
+      const dz = document.getElementById("dropzone");
+      if (dz) dz.classList.remove("drag");
+
+      document.getElementById("filler-editor").classList.add("hide");
+      document.getElementById("filler-intro").classList.remove("hide");
+    },
 
     async onFile(file) {
       if (!file || file.type !== "application/pdf") { alert("Escolha um arquivo PDF."); return; }
