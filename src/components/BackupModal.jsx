@@ -2,7 +2,7 @@ import { useState } from "react";
 import { BottomSheet } from "./ui.jsx";
 import { exportBackup, parseBackup, daysSinceLastBackup } from "../utils/backup.js";
 
-export function BackupModal({ entries, settings, gastos, carro, auditHistory, extras, onRestore, onClose }) {
+export function BackupModal({ entries, settings, gastos, carro, auditHistory, extras, visto, onRestore, onClose }) {
   const [tab, setTab] = useState("export");
   const [dragOver, setDragOver] = useState(false);
   const [preview, setPreview] = useState(null);
@@ -25,7 +25,7 @@ export function BackupModal({ entries, settings, gastos, carro, auditHistory, ex
   }
 
   function doExport() {
-    const json = exportBackup(entries, settings, gastos, carro, auditHistory, extras);
+    const json = exportBackup(entries, settings, gastos, carro, auditHistory, extras, visto);
     localStorage.setItem(lastBackupKey, new Date().toISOString());
     setBackupJson(json);
   }
@@ -66,6 +66,10 @@ export function BackupModal({ entries, settings, gastos, carro, auditHistory, ex
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--text-sub)" }}>Impostos/parcelas</span>
                 <span className="font-mono font-bold" style={{ color: "var(--warning)" }}>{taxCount}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span style={{ color: "var(--text-sub)" }}>Visto cadastrado</span>
+                <span className="font-mono font-bold" style={{ color: "var(--info)" }}>{visto?.grupoId ? "sim" : "não"}</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span style={{ color: "var(--text-sub)" }}>Último backup</span>

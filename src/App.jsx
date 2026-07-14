@@ -5,6 +5,7 @@ import { useGastos } from "./hooks/useGastos.js";
 import { useCarro } from "./hooks/useCarro.js";
 import { useAudit } from "./hooks/useAudit.js";
 import { useExtras } from "./hooks/useExtras.js";
+import { useVisto } from "./hooks/useVisto.js";
 import { dbSet } from "./db/db.js";
 import { Spinner } from "./components/ui.jsx";
 import { BackupModal } from "./components/BackupModal.jsx";
@@ -16,6 +17,7 @@ import { SuperFinance } from "./screens/SuperFinance.jsx";
 import { Settings } from "./screens/Settings.jsx";
 import { Cartao } from "./screens/Cartao.jsx";
 import { Impostos } from "./screens/Impostos.jsx";
+import { VistoJapones } from "./screens/VistoJapones.jsx";
 import { normalizeExtras, daysSinceLastBackup } from "./utils/backup.js";
 
 const TABS = [
@@ -31,6 +33,7 @@ const TABS = [
 
 export default function App() {
   const [tab, setTab] = useState("dashboard");
+  const [viewMode, setViewMode] = useState("finance"); // "finance" | "visto"
   const [theme, setTheme] = useState(() => localStorage.getItem("jst3_theme") || "dark");
   const [showBackup, setShowBackup] = useState(false);
 
@@ -40,8 +43,9 @@ export default function App() {
   const { carro, setCarro, loading: lc } = useCarro();
   const { auditHistory, setAuditHistory, loading: la } = useAudit();
   const { extras, setExtras, loading: lx } = useExtras();
+  const { visto, setVisto, loading: lv } = useVisto();
 
-  const loading = le || ls || lg || lc || la || lx;
+  const loading = le || ls || lg || lc || la || lx || lv;
 
   useEffect(() => {
     localStorage.setItem("jst3_theme", theme);
@@ -59,6 +63,7 @@ export default function App() {
     if (data.gastos) { await dbSet("gastos", data.gastos); setGastos(g => ({ ...g, ...data.gastos })); }
     if (data.carro) { await dbSet("carro", data.carro); setCarro(c => ({ ...c, ...data.carro })); }
     if (data.auditHistory) { await dbSet("auditHistory", data.auditHistory); setAuditHistory(data.auditHistory); }
+    if (data.visto) { await dbSet("visto", data.visto); setVisto(data.visto); }
     await dbSet("extras", restoredExtras);
     setExtras(restoredExtras);
   }
@@ -84,6 +89,15 @@ export default function App() {
         </div>
         <div className="flex items-center gap-2">
           <button
+            onClick={() => setViewMode(m => m === "visto" ? "finance" : "visto")}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1"
+            style={viewMode === "visto"
+              ? { background: "var(--info)", color: "#fff" }
+              : { background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text-sub)" }}
+          >
+            🗾 {viewMode === "visto" ? "Finanças" : "Visto Japonês"}
+          </button>
+          <button
             onClick={() => setShowBackup(true)}
             className="relative px-2.5 py-1.5 rounded-lg text-xs font-medium"
             style={{ background: "var(--bg-elevated)", border: `1px solid ${backupAlert ? "var(--negative)" : "var(--border-mid)"}`, color: backupAlert ? "var(--negative)" : "var(--text-sub)" }}
@@ -102,33 +116,41 @@ export default function App() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pt-4 max-w-lg mx-auto w-full">
-        {tab === "dashboard" && <Dashboard entries={entries} settings={settings} onAddEntry={addEntry} />}
-        {tab === "entries" && <Entries entries={entries} settings={settings} onAddEntry={addEntry} onDeleteEntry={deleteEntry} />}
-        {tab === "finance" && <SuperFinance entries={entries} settings={settings} gastos={gastos} extras={extras} />}
-        {tab === "cartao" && <Cartao extras={extras} setExtras={setExtras} />}
-        {tab === "gastos" && <Gastos gastos={gastos} setGastos={setGastos} carro={carro} setCarro={setCarro} />}
-        {tab === "reports" && <Reports entries={entries} settings={settings} />}
-        {tab === "impostos" && <Impostos extras={extras} setExtras={setExtras} />}
-        {tab === "config" && <Settings settings={settings} setSettings={setSettings} entries={entries} auditHistory={auditHistory} setAuditHistory={setAuditHistory} />}
+        {viewMode === "visto" ? (
+          <VistoJapones visto={visto} setVisto={setVisto} />
+        ) : (
+          <>
+            {tab === "dashboard" && <Dashboard entries={entries} settings={settings} onAddEntry={addEntry} />}
+            {tab === "entries" && <Entries entries={entries} settings={settings} onAddEntry={addEntry} onDeleteEntry={deleteEntry} />}
+            {tab === "finance" && <SuperFinance entries={entries} settings={settings} gastos={gastos} extras={extras} />}
+            {tab === "cartao" && <Cartao extras={extras} setExtras={setExtras} />}
+            {tab === "gastos" && <Gastos gastos={gastos} setGastos={setGastos} carro={carro} setCarro={setCarro} />}
+            {tab === "reports" && <Reports entries={entries} settings={settings} />}
+            {tab === "impostos" && <Impostos extras={extras} setExtras={setExtras} />}
+            {tab === "config" && <Settings settings={settings} setSettings={setSettings} entries={entries} auditHistory={auditHistory} setAuditHistory={setAuditHistory} />}
+          </>
+        )}
       </main>
 
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-40 border-t"
-        style={{ background: "var(--nav-bg)", borderColor: "var(--nav-border)", backdropFilter: "blur(12px)", paddingBottom: "env(safe-area-inset-bottom)" }}
-      >
-        <div className="flex max-w-lg mx-auto overflow-x-auto">
-          {TABS.map(t => {
-            const active = tab === t.id;
-            return (
-              <button key={t.id} onClick={() => setTab(t.id)} className="min-w-0 flex-1 flex flex-col items-center gap-0 py-1.5 transition-colors">
-                <span className="text-sm leading-none">{t.icon}</span>
-                <span className="font-medium leading-tight" style={{ fontSize: 9, color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
-                {active && <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--nav-active)" }} />}
-              </button>
-            );
-          })}
-        </div>
-      </nav>
+      {viewMode === "finance" && (
+        <nav
+          className="fixed bottom-0 left-0 right-0 z-40 border-t"
+          style={{ background: "var(--nav-bg)", borderColor: "var(--nav-border)", backdropFilter: "blur(12px)", paddingBottom: "env(safe-area-inset-bottom)" }}
+        >
+          <div className="flex max-w-lg mx-auto overflow-x-auto">
+            {TABS.map(t => {
+              const active = tab === t.id;
+              return (
+                <button key={t.id} onClick={() => setTab(t.id)} className="min-w-0 flex-1 flex flex-col items-center gap-0 py-1.5 transition-colors">
+                  <span className="text-sm leading-none">{t.icon}</span>
+                  <span className="font-medium leading-tight" style={{ fontSize: 9, color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
+                  {active && <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--nav-active)" }} />}
+                </button>
+              );
+            })}
+          </div>
+        </nav>
+      )}
 
       {showBackup && (
         <BackupModal
@@ -138,6 +160,7 @@ export default function App() {
           carro={carro}
           auditHistory={auditHistory}
           extras={extras}
+          visto={visto}
           onRestore={handleRestore}
           onClose={() => setShowBackup(false)}
         />

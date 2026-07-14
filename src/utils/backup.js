@@ -15,7 +15,7 @@ export function normalizeExtras(data = {}) {
   };
 }
 
-export function exportBackup(entries, settings, gastos, carro, auditHistory, extras) {
+export function exportBackup(entries, settings, gastos, carro, auditHistory, extras, visto) {
   const data = {
     version: 5,
     exportedAt: new Date().toISOString(),
@@ -24,6 +24,7 @@ export function exportBackup(entries, settings, gastos, carro, auditHistory, ext
     gastos: gastos || null,
     carro: carro || null,
     auditHistory: auditHistory || [],
+    visto: visto || null,
     ...normalizeExtras(extras || {}),
   };
   const json = JSON.stringify(data, null, 2);
