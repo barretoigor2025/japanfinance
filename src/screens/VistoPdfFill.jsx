@@ -1,10 +1,68 @@
 import { useState } from "react";
 import { Card, SectionLabel, Input, Pills, Spinner } from "../components/ui.jsx";
-import { FIELD_SECTIONS, emptyFormValues, fillSpousePrPdf } from "../utils/pdfSpousePrFill.js";
+import { FIELD_SECTIONS, emptyFormValues, emptyFamilyMember, fillSpousePrPdf } from "../utils/pdfSpousePrFill.js";
 
 function todayIso() {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function FamilyMemberRow({ member, onChange, onRemove }) {
+  function set(key, val) {
+    onChange({ ...member, [key]: val });
+  }
+  return (
+    <div className="rounded-lg p-2.5 space-y-2" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border)" }}>
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-semibold" style={{ color: "var(--text-muted)" }}>Familiar</span>
+        <button onClick={onRemove} className="text-xs" style={{ color: "var(--negative)" }}>✕ remover</button>
+      </div>
+      <Input label="Parentesco (続柄)" value={member.relationship} onChange={e => set("relationship", e.target.value)} placeholder="Filho(a)" />
+      <Input label="Nome" value={member.name} onChange={e => set("name", e.target.value)} placeholder="SILVA MARIA" />
+      <Input label="Data de nascimento" type="date" value={member.birthDate} onChange={e => set("birthDate", e.target.value)} />
+      <Input label="Nacionalidade / região" value={member.nationality} onChange={e => set("nationality", e.target.value)} placeholder="Brasil" />
+      <Input label="Escola ou local de trabalho" value={member.work} onChange={e => set("work", e.target.value)} placeholder="Escola Municipal X" />
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Mora com você? (同居の有無)</label>
+        <Pills
+          options={[{ value: "yes", label: "Sim" }, { value: "no", label: "Não" }]}
+          value={member.cohabiting}
+          onChange={val => set("cohabiting", val)}
+        />
+      </div>
+    </div>
+  );
+}
+
+function FamilyTableField({ field, members, onChange }) {
+  function updateAt(i, member) {
+    const next = members.slice();
+    next[i] = member;
+    onChange(next);
+  }
+  function removeAt(i) {
+    onChange(members.filter((_, idx) => idx !== i));
+  }
+  function add() {
+    if (members.length >= field.max) return;
+    onChange([...members, emptyFamilyMember()]);
+  }
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>{field.label}</label>
+      <p className="text-xs -mt-1" style={{ color: "var(--text-muted)" }}>
+        Preencha só se marcou "Sim" acima — filhos e outros parentes que moram com você ou vivem no Japão entram aqui (até {field.max}).
+      </p>
+      {members.map((m, i) => (
+        <FamilyMemberRow key={i} member={m} onChange={val => updateAt(i, val)} onRemove={() => removeAt(i)} />
+      ))}
+      {members.length < field.max && (
+        <button onClick={add} className="w-full py-2 rounded-lg text-xs font-semibold" style={{ background: "var(--bg-elevated)", border: "1px dashed var(--border-mid)", color: "var(--text-sub)" }}>
+          + Adicionar familiar
+        </button>
+      )}
+    </div>
+  );
 }
 
 function Field({ field, value, onChange }) {
@@ -119,9 +177,14 @@ export function VistoPdfFill({ visto, setVisto }) {
         <Card key={section.id}>
           <SectionLabel>{section.label}</SectionLabel>
           <div className="space-y-2.5">
-            {section.fields.map(field => (
-              <Field key={field.id} field={field} value={dados[field.id]} onChange={val => setField(field.id, val)} />
-            ))}
+            {section.fields.map(field => {
+              if (field.type === "familyTable") {
+                return dados.familyInJapan === "yes"
+                  ? <FamilyTableField key={field.id} field={field} members={dados[field.id] || []} onChange={val => setField(field.id, val)} />
+                  : null;
+              }
+              return <Field key={field.id} field={field} value={dados[field.id]} onChange={val => setField(field.id, val)} />;
+            })}
           </div>
         </Card>
       ))}

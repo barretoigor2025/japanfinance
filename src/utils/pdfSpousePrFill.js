@@ -15,13 +15,34 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const FORM_PDF_URL = `${import.meta.env.BASE_URL}forms/zairyu-koshin-shinsei.pdf`;
-export const FONT_URL = `${import.meta.env.BASE_URL}vendor/NotoSansJP.ttf`;
+export const JP_FONT_URL = `${import.meta.env.BASE_URL}vendor/NotoSansJP.ttf`;
+// Fonte latina embutida no PDF (em vez da Helvetica não-embutida do pdf-lib)
+// para garantir que o texto renderize igual em qualquer leitor de PDF — o
+// leitor padrão do Android às vezes substitui fontes não-embutidas por uma
+// com métricas ligeiramente diferentes, o que descentralizava os números.
+// Liberation Sans é metricamente compatível com Arial/Helvetica.
+export const LAT_FONT_URL = `${import.meta.env.BASE_URL}vendor/LiberationSans-Regular.ttf`;
 
 // dx/dy médios entre o início do rótulo "年" (ano) / "月" (mês) / "日" (dia)
 // de uma linha de data e a posição onde o número deve ser escrito.
 function dateRow(page, y, yearX, monthX, dayX) {
   return { page, y, year: { x: yearX }, month: { x: monthX }, day: { x: dayX } };
 }
+
+// Colunas da tabela do item 16 (在日親族及び同居者 — familiares no Japão e
+// pessoas que moram com o(a) requerente), página 1. A tabela tem 6 linhas
+// fixas no formulário oficial; cada linha tem colunas bem estreitas, por
+// isso usamos fonte menor e encolhemos automaticamente o texto que não
+// couber (ver drawFitText).
+const FAMILY_ROW_Y = [225.4, 204.3, 183.1, 162.0, 140.9, 119.8];
+const FAMILY_COLS = {
+  relationship: { x: 48, maxWidth: 82 },
+  name: { x: 110, maxWidth: 98 },
+  birth: { x: 213, maxWidth: 42 },
+  nationality: { x: 262, maxWidth: 38 },
+  work: { x: 356, maxWidth: 84 },
+  cohabit: { yes: { x: 317, y: 3 }, no: { x: 328, y: 3 } },
+};
 
 export const FIELD_SECTIONS = [
   {
@@ -40,14 +61,14 @@ export const FIELD_SECTIONS = [
         id: "maritalStatus", label: "Estado civil", jp: "配偶者の有無", type: "choice", page: 0,
         options: [{ value: "married", label: "Casado(a)", x: 378, y: 599 }, { value: "single", label: "Solteiro(a)", x: 405.6, y: 599 }],
       },
-      { id: "occupation", label: "Profissão", jp: "職業", font: "jp", page: 0, x: 135.2, y: 567.2, placeholder: "会社員" },
+      { id: "occupation", label: "Profissão", jp: "職業", font: "jp", page: 0, x: 135.2, y: 567.2, maxWidth: 75, placeholder: "会社員" },
       { id: "hometown", label: "Cidade/estado de origem (no seu país)", jp: "本国における居住地", font: "lat", page: 0, x: 394.9, y: 567.2, placeholder: "Brasil SP" },
       { id: "addressJapan", label: "Endereço no Japão", jp: "住居地", font: "jp", page: 0, x: 209.6, y: 544.1, placeholder: "東京都渋谷区1-2-3" },
       { id: "phone", label: "Telefone", jp: "電話番号", font: "lat", page: 0, x: 137.6, y: 520.5, placeholder: "03-1234-5678" },
       { id: "cellphone", label: "Celular", jp: "携帯電話番号", font: "lat", page: 0, x: 382.6, y: 520.5, placeholder: "090-1234-5678" },
       { id: "passportNumber", label: "Número do passaporte", jp: "旅券番号", font: "lat", page: 0, x: 172.4, y: 496.4, placeholder: "FZ1234567" },
       { id: "passportExpiry", label: "Validade do passaporte", jp: "旅券有効期限", type: "date", font: "lat", ...dateRow(0, 496.4, 361.8, 437.8, 495.9) },
-      { id: "currentStatus", label: "Status de residência atual", jp: "現に有する在留資格", font: "jp", page: 0, x: 182.1, y: 472.4, placeholder: "永住者の配偶者等" },
+      { id: "currentStatus", label: "Status de residência atual", jp: "現に有する在留資格", font: "jp", page: 0, x: 182.1, y: 472.4, maxWidth: 122, placeholder: "永住者の配偶者等" },
       { id: "currentPeriod", label: "Período de permanência atual", jp: "在留期間", font: "jp", page: 0, x: 445.7, y: 472.4, placeholder: "3年" },
       { id: "currentExpiry", label: "Data de vencimento do visto atual", jp: "在留期間の満了日", type: "date", font: "lat", ...dateRow(0, 447.9, 162.0, 234.1, 286.4) },
       { id: "residenceCardNumber", label: "Número do cartão de residência", jp: "在留カード番号", font: "lat", page: 0, x: 186.8, y: 423.4, placeholder: "AB12345678CD" },
@@ -60,6 +81,10 @@ export const FIELD_SECTIONS = [
       {
         id: "familyInJapan", label: "Tem familiares morando no Japão?", jp: "在日親族及び同居者", type: "choice", page: 0,
         options: [{ value: "yes", label: "Sim", x: 78, y: 290 }, { value: "no", label: "Não", x: 412.5, y: 290 }],
+      },
+      {
+        id: "familyMembers", type: "familyTable", label: "Familiares no Japão e pessoas que moram com você",
+        jp: "続柄・氏名・生年月日・国籍・同居の有無・勤務先または通学先", max: FAMILY_ROW_Y.length,
       },
     ],
   },
@@ -74,12 +99,12 @@ export const FIELD_SECTIONS = [
           { value: "child", label: "Sou filho(a)", x: 171, y: 640.4 },
         ],
       },
-      { id: "marriageRegPlaceJp", label: "Onde registrou o casamento no Japão (se registrou)", jp: "(1)日本国届出先", font: "jp", page: 2, x: 212.2, y: 495.6, placeholder: "なし (se não registrou no Japão)" },
-      { id: "marriageRegPlaceForeign", label: "Onde registrou o casamento no exterior", jp: "(2)本国等届出先", font: "lat", page: 2, x: 201.4, y: 473.9, placeholder: "Brasil SP" },
+      { id: "marriageRegPlaceJp", label: "Onde registrou o casamento no Japão (se registrou)", jp: "(1)日本国届出先", font: "jp", page: 2, x: 212.2, y: 495.6, maxWidth: 88, placeholder: "なし (se não registrou no Japão)" },
+      { id: "marriageRegPlaceForeign", label: "Onde registrou o casamento no exterior", jp: "(2)本国等届出先", font: "lat", page: 2, x: 201.4, y: 473.9, maxWidth: 98, placeholder: "Brasil SP" },
       { id: "marriageRegDate", label: "Data de registro do casamento", jp: "届出年月日", type: "date", font: "lat", ...dateRow(2, 475.7, 364.5, 434.1, 481.8) },
-      { id: "employerName", label: "Nome da empresa (cônjuge)", jp: "(1)名称", font: "jp", page: 2, x: 156.6, y: 411.3, placeholder: "株式会社サンプル" },
-      { id: "employerBranch", label: "Filial / departamento", jp: "支店・事業所名", font: "jp", page: 2, x: 403.7, y: 411.3, placeholder: "東京支店" },
-      { id: "employerAddress", label: "Endereço da empresa", jp: "(2)所在地", font: "jp", page: 2, x: 181.2, y: 389.7, placeholder: "東京都渋谷区1-2-3" },
+      { id: "employerName", label: "Nome da empresa (cônjuge)", jp: "(1)名称", font: "jp", page: 2, x: 156.6, y: 411.3, maxWidth: 230, placeholder: "株式会社サンプル" },
+      { id: "employerBranch", label: "Filial / departamento", jp: "支店・事業所名", font: "jp", page: 2, x: 403.7, y: 411.3, maxWidth: 145, placeholder: "東京支店" },
+      { id: "employerAddress", label: "Endereço da empresa", jp: "(2)所在地", font: "jp", page: 2, x: 181.2, y: 389.7, maxWidth: 200, placeholder: "東京都渋谷区1-2-3" },
       { id: "employerPhone", label: "Telefone da empresa", jp: "電話番号", font: "lat", page: 2, x: 407.9, y: 389.7, placeholder: "03-1234-5678" },
       { id: "annualIncome", label: "Renda anual do cônjuge (¥)", jp: "(3)年収", font: "lat", page: 2, x: 141.5, y: 368.1, placeholder: "4000000" },
       { id: "monthlySupport", label: "Valor médio mensal de sustento (¥)", jp: "月平均支弁額", font: "lat", page: 2, x: 204.7, y: 327.1, placeholder: "150000", mark: { x: 83.6, y: 330.2 } },
@@ -90,7 +115,7 @@ export const FIELD_SECTIONS = [
     label: "Garantidor e assinatura (página 4)",
     fields: [
       { id: "guarantorName", label: "Nome do garantidor", jp: "(1)氏名", font: "lat", page: 3, x: 148.4, y: 504.0, placeholder: "YAMADA HANAKO" },
-      { id: "guarantorOccupation", label: "Profissão do garantidor", jp: "(2)職業", font: "jp", page: 3, x: 408.9, y: 504.0, placeholder: "会社員" },
+      { id: "guarantorOccupation", label: "Profissão do garantidor", jp: "(2)職業", font: "jp", page: 3, x: 408.9, y: 504.0, maxWidth: 135, placeholder: "会社員" },
       { id: "guarantorAddress", label: "Endereço do garantidor", jp: "(3)住所", font: "jp", page: 3, x: 207.2, y: 480.2, placeholder: "東京都渋谷区1-2-3" },
       { id: "guarantorPhone", label: "Telefone do garantidor", jp: "電話番号", font: "lat", page: 3, x: 144.8, y: 457.0, placeholder: "03-1234-5678" },
       { id: "guarantorCellphone", label: "Celular do garantidor", jp: "携帯電話番号", font: "lat", page: 3, x: 380.2, y: 457.0, placeholder: "090-1234-5678" },
@@ -104,9 +129,15 @@ function allFields() {
   return FIELD_SECTIONS.flatMap(s => s.fields);
 }
 
+export function emptyFamilyMember() {
+  return { relationship: "", name: "", birthDate: "", nationality: "", cohabiting: "yes", work: "" };
+}
+
 export function emptyFormValues() {
   const values = {};
-  for (const f of allFields()) values[f.id] = "";
+  for (const f of allFields()) {
+    values[f.id] = f.type === "familyTable" ? [] : "";
+  }
   values.maritalStatus = "married";
   values.criminalRecord = "no";
   values.familyInJapan = "yes";
@@ -121,39 +152,61 @@ function splitDateIso(iso) {
 }
 
 export async function fillSpousePrPdf(values) {
-  const [{ PDFDocument, rgb, StandardFonts }, fontkitMod, formBytes, fontBytes] = await Promise.all([
+  const [{ PDFDocument, rgb }, fontkitMod, formBytes, jpFontBytes, latFontBytes] = await Promise.all([
     import("pdf-lib"),
     import("@pdf-lib/fontkit"),
     fetch(FORM_PDF_URL).then(r => r.arrayBuffer()),
-    fetch(FONT_URL).then(r => r.arrayBuffer()),
+    fetch(JP_FONT_URL).then(r => r.arrayBuffer()),
+    fetch(LAT_FONT_URL).then(r => r.arrayBuffer()),
   ]);
   const fontkit = fontkitMod.default || fontkitMod;
 
   const doc = await PDFDocument.load(formBytes);
   doc.registerFontkit(fontkit);
-  const jpFont = await doc.embedFont(fontBytes, { subset: false });
-  const latFont = await doc.embedFont(StandardFonts.Helvetica);
+  const jpFont = await doc.embedFont(jpFontBytes, { subset: false });
+  const latFont = await doc.embedFont(latFontBytes, { subset: false });
   const pages = doc.getPages();
   const black = rgb(0, 0, 0);
   const SIZE = 10;
+  const MIN_SIZE = 5.5;
 
-  function drawText(page, x, y, str, font, size = SIZE) {
+  function fontFor(kind) {
+    return kind === "jp" ? jpFont : latFont;
+  }
+  // Colunas da tabela de familiares aceitam texto em português ou japonês
+  // (ex.: "Filho(a)" ou "子"), então a fonte é escolhida pelo conteúdo real
+  // em vez de fixa: latina pura garante espaçamento correto pra texto
+  // 100% latino, japonesa cobre qualquer caractere CJK presente.
+  function fontForText(str) {
+    return /[぀-ヿ㐀-鿿＀-￯]/.test(str) ? jpFont : latFont;
+  }
+  // Encolhe a fonte até o texto caber em maxWidth (nunca abaixo de MIN_SIZE)
+  // em vez de deixar transbordar em cima da coluna vizinha do formulário.
+  function fitSize(str, font, maxWidth, baseSize = SIZE) {
+    if (!maxWidth) return baseSize;
+    const width = font.widthOfTextAtSize(str, baseSize);
+    if (width <= maxWidth) return baseSize;
+    return Math.max(MIN_SIZE, baseSize * (maxWidth / width));
+  }
+  function drawText(page, x, y, str, font, opts = {}) {
     if (!str) return;
+    const size = fitSize(str, font, opts.maxWidth, opts.size ?? SIZE);
     pages[page].drawText(str, { x, y, size, font, color: black });
   }
-  function drawCircle(page, cx, cy) {
-    pages[page].drawEllipse({ x: cx, y: cy, xScale: 13, yScale: 9, borderColor: rgb(0.8, 0, 0), borderWidth: 1.2 });
+  function drawCircle(page, cx, cy, rx = 13, ry = 9) {
+    pages[page].drawEllipse({ x: cx, y: cy, xScale: rx, yScale: ry, borderColor: rgb(0.8, 0, 0), borderWidth: 1.2 });
   }
   function drawBox(page, x, y, size = 8) {
     pages[page].drawRectangle({ x: x - 1, y: y - 1, width: size, height: size, color: black });
   }
 
   for (const field of allFields()) {
+    if (field.type === "familyTable") continue;
     const value = values[field.id];
     if (field.type === "date") {
       const parts = splitDateIso(value);
       if (!parts) continue;
-      const font = field.font === "jp" ? jpFont : latFont;
+      const font = fontFor(field.font);
       drawText(field.page, field.year.x, field.y, parts.year, font);
       drawText(field.page, field.month.x, field.y, parts.month, font);
       drawText(field.page, field.day.x, field.y, parts.day, font);
@@ -165,10 +218,28 @@ export async function fillSpousePrPdf(values) {
       }
     } else {
       if (field.mark && value) drawBox(field.page, field.mark.x, field.mark.y);
-      const font = field.font === "jp" ? jpFont : latFont;
-      drawText(field.page, field.x, field.y, value, font);
+      const font = fontFor(field.font);
+      drawText(field.page, field.x, field.y, value, font, { maxWidth: field.maxWidth });
     }
   }
+
+  const members = values.familyInJapan === "yes" && Array.isArray(values.familyMembers)
+    ? values.familyMembers.slice(0, FAMILY_ROW_Y.length)
+    : [];
+  members.forEach((m, i) => {
+    const rowY = FAMILY_ROW_Y[i];
+    const famSize = 8;
+    drawText(0, FAMILY_COLS.relationship.x, rowY, m.relationship, fontForText(m.relationship), { maxWidth: FAMILY_COLS.relationship.maxWidth, size: famSize });
+    drawText(0, FAMILY_COLS.name.x, rowY, m.name, fontForText(m.name), { maxWidth: FAMILY_COLS.name.maxWidth, size: famSize });
+    const birthParts = splitDateIso(m.birthDate);
+    if (birthParts) {
+      drawText(0, FAMILY_COLS.birth.x, rowY, `${birthParts.year}/${birthParts.month}/${birthParts.day}`, latFont, { maxWidth: FAMILY_COLS.birth.maxWidth, size: 7 });
+    }
+    drawText(0, FAMILY_COLS.nationality.x, rowY, m.nationality, fontForText(m.nationality), { maxWidth: FAMILY_COLS.nationality.maxWidth, size: famSize });
+    drawText(0, FAMILY_COLS.work.x, rowY, m.work, fontForText(m.work), { maxWidth: FAMILY_COLS.work.maxWidth, size: famSize });
+    const cohabit = FAMILY_COLS.cohabit[m.cohabiting === "no" ? "no" : "yes"];
+    drawCircle(0, cohabit.x, rowY + cohabit.y, 6, 5);
+  });
 
   return doc.save();
 }
