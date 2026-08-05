@@ -67,6 +67,13 @@ export const FIELD_SECTIONS = [
     id: "conjuge",
     label: "Casamento e trabalho do cônjuge (página 3)",
     fields: [
+      {
+        id: "relationship", label: "Sua relação com o Residente Permanente", jp: "17 身分又は地位", type: "choice", shape: "box", page: 2,
+        options: [
+          { value: "spouse", label: "Sou cônjuge (esposo/a)", x: 171, y: 654.8 },
+          { value: "child", label: "Sou filho(a)", x: 171, y: 640.4 },
+        ],
+      },
       { id: "marriageRegPlaceJp", label: "Onde registrou o casamento no Japão (se registrou)", jp: "(1)日本国届出先", font: "jp", page: 2, x: 212.2, y: 495.6, placeholder: "なし (se não registrou no Japão)" },
       { id: "marriageRegPlaceForeign", label: "Onde registrou o casamento no exterior", jp: "(2)本国等届出先", font: "lat", page: 2, x: 201.4, y: 473.9, placeholder: "Brasil SP" },
       { id: "marriageRegDate", label: "Data de registro do casamento", jp: "届出年月日", type: "date", font: "lat", ...dateRow(2, 475.7, 364.5, 434.1, 481.8) },
@@ -92,11 +99,6 @@ export const FIELD_SECTIONS = [
     ],
   },
 ];
-
-// Marca fixa: caixa "配偶者" na linha "永住者・特別永住者" (página 3) —
-// sempre marcada nesta ferramenta porque ela é exclusiva da categoria
-// cônjuge de Residente Permanente.
-const RELATIONSHIP_MARK = { page: 2, x: 171, y: 654.8, size: 8 };
 
 function allFields() {
   return FIELD_SECTIONS.flatMap(s => s.fields);
@@ -157,15 +159,16 @@ export async function fillSpousePrPdf(values) {
       drawText(field.page, field.day.x, field.y, parts.day, font);
     } else if (field.type === "choice") {
       const opt = field.options.find(o => o.value === value);
-      if (opt) drawCircle(field.page, opt.x, opt.y);
+      if (opt) {
+        if (field.shape === "box") drawBox(field.page, opt.x, opt.y);
+        else drawCircle(field.page, opt.x, opt.y);
+      }
     } else {
       if (field.mark && value) drawBox(field.page, field.mark.x, field.mark.y);
       const font = field.font === "jp" ? jpFont : latFont;
       drawText(field.page, field.x, field.y, value, font);
     }
   }
-
-  drawBox(RELATIONSHIP_MARK.page, RELATIONSHIP_MARK.x, RELATIONSHIP_MARK.y, RELATIONSHIP_MARK.size);
 
   return doc.save();
 }

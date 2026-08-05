@@ -64,6 +64,10 @@ export function VistoPdfFill({ visto, setVisto }) {
   }
 
   async function gerar() {
+    if (!dados.relationship) {
+      setError("Selecione se você é cônjuge ou filho(a) do Residente Permanente (seção \"Casamento e trabalho do cônjuge\") antes de gerar o PDF.");
+      return;
+    }
     setBusy(true);
     setError("");
     try {

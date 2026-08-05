@@ -27,7 +27,7 @@ function ChecklistTab({ visto, setVisto }) {
 
     function confirmarCadastro() {
       if (!wizGrupo || !wizVariante || !wizData) return;
-      setVisto({ grupoId: wizGrupo, varianteId: wizVariante, validade: wizData, checklist: editing && visto?.grupoId === wizGrupo && visto?.varianteId === wizVariante ? visto.checklist : {} });
+      setVisto({ grupoId: wizGrupo, varianteId: wizVariante, validade: wizData, checklist: editing && visto?.grupoId === wizGrupo && visto?.varianteId === wizVariante ? visto.checklist : {}, pdfDados: visto?.pdfDados || {} });
       setEditing(false);
       setWizGrupo(null); setWizVariante(null); setWizData("");
     }
