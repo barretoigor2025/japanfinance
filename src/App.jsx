@@ -28,12 +28,12 @@ const TABS = [
   { id: "cartao",    label: "Cartão",   icon: "💳" },
   { id: "gastos",    label: "Gastos",   icon: "💰" },
   { id: "impostos",  label: "Taxas",    icon: "🏛️" },
+  { id: "visto",     label: "Visto",    icon: "🗾" },
   { id: "config",    label: "Config",   icon: "⚙️" },
 ];
 
 export default function App() {
   const [tab, setTab] = useState("dashboard");
-  const [viewMode, setViewMode] = useState("finance"); // "finance" | "visto"
   const [theme, setTheme] = useState(() => localStorage.getItem("jst3_theme") || "dark");
   const [showBackup, setShowBackup] = useState(false);
 
@@ -89,15 +89,6 @@ export default function App() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setViewMode(m => m === "visto" ? "finance" : "visto")}
-            className="px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1"
-            style={viewMode === "visto"
-              ? { background: "var(--info)", color: "#fff" }
-              : { background: "var(--bg-elevated)", border: "1px solid var(--border-mid)", color: "var(--text-sub)" }}
-          >
-            🗾 {viewMode === "visto" ? "Finanças" : "Visto Japonês"}
-          </button>
-          <button
             onClick={() => setShowBackup(true)}
             className="relative px-2.5 py-1.5 rounded-lg text-xs font-medium"
             style={{ background: "var(--bg-elevated)", border: `1px solid ${backupAlert ? "var(--negative)" : "var(--border-mid)"}`, color: backupAlert ? "var(--negative)" : "var(--text-sub)" }}
@@ -116,41 +107,34 @@ export default function App() {
       </header>
 
       <main className="flex-1 overflow-y-auto px-4 pt-4 max-w-lg mx-auto w-full">
-        {viewMode === "visto" ? (
-          <VistoJapones visto={visto} setVisto={setVisto} />
-        ) : (
-          <>
-            {tab === "dashboard" && <Dashboard entries={entries} settings={settings} onAddEntry={addEntry} />}
-            {tab === "entries" && <Entries entries={entries} settings={settings} onAddEntry={addEntry} onDeleteEntry={deleteEntry} />}
-            {tab === "finance" && <SuperFinance entries={entries} settings={settings} gastos={gastos} extras={extras} />}
-            {tab === "cartao" && <Cartao extras={extras} setExtras={setExtras} />}
-            {tab === "gastos" && <Gastos gastos={gastos} setGastos={setGastos} carro={carro} setCarro={setCarro} />}
-            {tab === "reports" && <Reports entries={entries} settings={settings} />}
-            {tab === "impostos" && <Impostos extras={extras} setExtras={setExtras} />}
-            {tab === "config" && <Settings settings={settings} setSettings={setSettings} entries={entries} auditHistory={auditHistory} setAuditHistory={setAuditHistory} />}
-          </>
-        )}
+        {tab === "dashboard" && <Dashboard entries={entries} settings={settings} onAddEntry={addEntry} />}
+        {tab === "entries" && <Entries entries={entries} settings={settings} onAddEntry={addEntry} onDeleteEntry={deleteEntry} />}
+        {tab === "finance" && <SuperFinance entries={entries} settings={settings} gastos={gastos} extras={extras} />}
+        {tab === "cartao" && <Cartao extras={extras} setExtras={setExtras} />}
+        {tab === "gastos" && <Gastos gastos={gastos} setGastos={setGastos} carro={carro} setCarro={setCarro} />}
+        {tab === "reports" && <Reports entries={entries} settings={settings} />}
+        {tab === "impostos" && <Impostos extras={extras} setExtras={setExtras} />}
+        {tab === "visto" && <VistoJapones visto={visto} setVisto={setVisto} />}
+        {tab === "config" && <Settings settings={settings} setSettings={setSettings} entries={entries} auditHistory={auditHistory} setAuditHistory={setAuditHistory} />}
       </main>
 
-      {viewMode === "finance" && (
-        <nav
-          className="fixed bottom-0 left-0 right-0 z-40 border-t"
-          style={{ background: "var(--nav-bg)", borderColor: "var(--nav-border)", backdropFilter: "blur(12px)", paddingBottom: "env(safe-area-inset-bottom)" }}
-        >
-          <div className="flex max-w-lg mx-auto overflow-x-auto">
-            {TABS.map(t => {
-              const active = tab === t.id;
-              return (
-                <button key={t.id} onClick={() => setTab(t.id)} className="min-w-0 flex-1 flex flex-col items-center gap-0 py-1.5 transition-colors">
-                  <span className="text-sm leading-none">{t.icon}</span>
-                  <span className="font-medium leading-tight" style={{ fontSize: 9, color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
-                  {active && <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--nav-active)" }} />}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-      )}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-40 border-t"
+        style={{ background: "var(--nav-bg)", borderColor: "var(--nav-border)", backdropFilter: "blur(12px)", paddingBottom: "env(safe-area-inset-bottom)" }}
+      >
+        <div className="flex max-w-lg mx-auto overflow-x-auto">
+          {TABS.map(t => {
+            const active = tab === t.id;
+            return (
+              <button key={t.id} onClick={() => setTab(t.id)} className="min-w-0 flex-1 flex flex-col items-center gap-0 py-1.5 transition-colors">
+                <span className="text-sm leading-none">{t.icon}</span>
+                <span className="font-medium leading-tight" style={{ fontSize: 9, color: active ? "var(--nav-active)" : "var(--nav-inactive)" }}>{t.label}</span>
+                {active && <span className="w-4 h-0.5 rounded-full" style={{ background: "var(--nav-active)" }} />}
+              </button>
+            );
+          })}
+        </div>
+      </nav>
 
       {showBackup && (
         <BackupModal

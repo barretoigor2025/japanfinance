@@ -4,8 +4,9 @@ import {
   VISTO_GRUPOS, findVariante, buildChecklist, CHECKLIST_GRUPOS_LABEL,
   calcStatus, DIAS_JANELA_RENOVACAO,
 } from "../utils/vistoData.js";
+import { VistoAgente } from "./VistoAgente.jsx";
 
-export function VistoJapones({ visto, setVisto }) {
+function ChecklistTab({ visto, setVisto }) {
   const [wizGrupo, setWizGrupo] = useState(null);
   const [wizVariante, setWizVariante] = useState(null);
   const [wizData, setWizData] = useState("");
@@ -31,12 +32,7 @@ export function VistoJapones({ visto, setVisto }) {
     }
 
     return (
-      <div className="space-y-2 pb-20">
-        <div>
-          <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Visto Japonês</div>
-          <h1 className="text-lg font-bold leading-tight" style={{ color: "var(--text)" }}>Cadastrar seu visto</h1>
-        </div>
-
+      <div className="space-y-2">
         {visto?.grupoId && !editing && (
           <Card>
             <p className="text-sm mb-2" style={{ color: "var(--text-sub)" }}>Você já tem um visto cadastrado.</p>
@@ -134,12 +130,9 @@ export function VistoJapones({ visto, setVisto }) {
   const gruposOrdem = ["formulario", "prefeitura", "apresentar", "outros"];
 
   return (
-    <div className="space-y-2 pb-20">
+    <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div>
-          <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Visto Japonês</div>
-          <h1 className="text-lg font-bold leading-tight" style={{ color: "var(--text)" }}>{grupo.label}</h1>
-        </div>
+        <h2 className="text-base font-bold leading-tight" style={{ color: "var(--text)" }}>{grupo.label}</h2>
         <button
           onClick={() => setEditing(true)}
           className="w-8 h-8 flex items-center justify-center rounded-lg text-sm"
@@ -229,6 +222,38 @@ export function VistoJapones({ visto, setVisto }) {
         <a href={grupo.fonte} target="_blank" rel="noopener noreferrer" style={{ color: "var(--info)" }}>{grupo.fonte.replace("https://www.moj.go.jp", "moj.go.jp")}</a>
         . Regras mudam com frequência — confira sempre o checklist oficial antes de reunir os documentos.
       </div>
+    </div>
+  );
+}
+
+export function VistoJapones({ visto, setVisto }) {
+  const [sub, setSub] = useState("checklist"); // "checklist" | "agente"
+
+  return (
+    <div className="space-y-2 pb-20">
+      <div>
+        <div className="text-xs uppercase tracking-widest" style={{ color: "var(--text-muted)" }}>Visto Japonês</div>
+        <h1 className="text-lg font-bold leading-tight" style={{ color: "var(--text)" }}>Renovação e Visto Permanente</h1>
+      </div>
+
+      <div className="flex rounded-xl p-1" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
+        <button
+          onClick={() => setSub("checklist")}
+          className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+          style={sub === "checklist" ? { background: "var(--text)", color: "var(--bg)" } : { color: "var(--text-sub)" }}
+        >
+          📋 Checklist
+        </button>
+        <button
+          onClick={() => setSub("agente")}
+          className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+          style={sub === "agente" ? { background: "var(--text)", color: "var(--bg)" } : { color: "var(--text-sub)" }}
+        >
+          🤖 Agente
+        </button>
+      </div>
+
+      {sub === "checklist" ? <ChecklistTab visto={visto} setVisto={setVisto} /> : <VistoAgente />}
     </div>
   );
 }
