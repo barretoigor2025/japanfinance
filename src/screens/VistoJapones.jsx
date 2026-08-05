@@ -5,6 +5,7 @@ import {
   calcStatus, DIAS_JANELA_RENOVACAO,
 } from "../utils/vistoData.js";
 import { VistoAgente } from "./VistoAgente.jsx";
+import { VistoPdfFill } from "./VistoPdfFill.jsx";
 
 function ChecklistTab({ visto, setVisto }) {
   const [wizGrupo, setWizGrupo] = useState(null);
@@ -26,7 +27,7 @@ function ChecklistTab({ visto, setVisto }) {
 
     function confirmarCadastro() {
       if (!wizGrupo || !wizVariante || !wizData) return;
-      setVisto({ grupoId: wizGrupo, varianteId: wizVariante, validade: wizData, checklist: editing && visto?.grupoId === wizGrupo && visto?.varianteId === wizVariante ? visto.checklist : {} });
+      setVisto({ grupoId: wizGrupo, varianteId: wizVariante, validade: wizData, checklist: editing && visto?.grupoId === wizGrupo && visto?.varianteId === wizVariante ? visto.checklist : {}, pdfDados: visto?.pdfDados || {} });
       setEditing(false);
       setWizGrupo(null); setWizVariante(null); setWizData("");
     }
@@ -226,8 +227,14 @@ function ChecklistTab({ visto, setVisto }) {
   );
 }
 
+const SUB_TABS = [
+  { id: "checklist", label: "📋 Checklist" },
+  { id: "agente", label: "🤖 Agente" },
+  { id: "pdf", label: "📄 Preencher PDF" },
+];
+
 export function VistoJapones({ visto, setVisto }) {
-  const [sub, setSub] = useState("checklist"); // "checklist" | "agente"
+  const [sub, setSub] = useState("checklist"); // "checklist" | "agente" | "pdf"
 
   return (
     <div className="space-y-2 pb-20">
@@ -237,23 +244,21 @@ export function VistoJapones({ visto, setVisto }) {
       </div>
 
       <div className="flex rounded-xl p-1" style={{ background: "var(--bg-elevated)", border: "1px solid var(--border-mid)" }}>
-        <button
-          onClick={() => setSub("checklist")}
-          className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-          style={sub === "checklist" ? { background: "var(--text)", color: "var(--bg)" } : { color: "var(--text-sub)" }}
-        >
-          📋 Checklist
-        </button>
-        <button
-          onClick={() => setSub("agente")}
-          className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
-          style={sub === "agente" ? { background: "var(--text)", color: "var(--bg)" } : { color: "var(--text-sub)" }}
-        >
-          🤖 Agente
-        </button>
+        {SUB_TABS.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setSub(t.id)}
+            className="flex-1 py-1.5 rounded-lg text-xs font-semibold transition-colors"
+            style={sub === t.id ? { background: "var(--text)", color: "var(--bg)" } : { color: "var(--text-sub)" }}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {sub === "checklist" ? <ChecklistTab visto={visto} setVisto={setVisto} /> : <VistoAgente />}
+      {sub === "checklist" && <ChecklistTab visto={visto} setVisto={setVisto} />}
+      {sub === "agente" && <VistoAgente />}
+      {sub === "pdf" && <VistoPdfFill visto={visto} setVisto={setVisto} />}
     </div>
   );
 }

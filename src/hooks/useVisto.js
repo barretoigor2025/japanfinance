@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { dbGet, dbSet } from "../db/db.js";
 
 const KEY = "visto";
-const defaultVisto = { grupoId: null, varianteId: null, validade: null, checklist: {} };
+const defaultVisto = { grupoId: null, varianteId: null, validade: null, checklist: {}, pdfDados: {} };
 
 export function useVisto() {
   const [visto, setVistoState] = useState(defaultVisto);
