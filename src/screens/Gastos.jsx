@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Card, SectionLabel, Badge, BottomSheet } from "../components/ui.jsx";
+import { Card, SectionLabel, Badge, BottomSheet, ConfirmBar } from "../components/ui.jsx";
 import { YEN, currentMonth, prevMonth, nextMonth } from "../utils/fmt.js";
 import { Carro } from "./Carro.jsx";
 
@@ -25,6 +25,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   // modal states
   const [itemModal, setItemModal] = useState(null); // {tipo, id?, name, amount, isMonth}
   const [cartaoModal, setCartaoModal] = useState(null); // {id?, nome, valor}
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // id do item fixo pendente de confirmação de exclusão
 
   function showToast(msg) {
     setToast(msg);
@@ -91,19 +92,40 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     });
   }
 
-  function hideItem(id) {
+  // Reativa um item pausado, seja qual for o motivo de ele estar na lista de
+  // ocultos (active === false ou oculto só neste mês) — o botão de restaurar
+  // precisa funcionar nos dois casos.
+  function restoreItem(type, id) {
     update(g => {
-      if (!g.monthHidden) g.monthHidden = {};
-      if (!g.monthHidden[month]) g.monthHidden[month] = [];
-      if (!g.monthHidden[month].includes(id)) g.monthHidden[month].push(id);
+      const arr = type === "renda" ? g.rendas : g.despesas;
+      const item = (arr || []).find(i => i.id === id);
+      if (item) item.active = true;
+      if (g.monthHidden) {
+        Object.keys(g.monthHidden).forEach(m => {
+          g.monthHidden[m] = g.monthHidden[m].filter(x => x !== id);
+        });
+      }
       return g;
     });
   }
 
-  function unhideItem(id) {
+  // Exclui um item fixo/recorrente para sempre (diferente de ocultar: some
+  // da lista de rendas/despesas e não volta a aparecer em nenhum mês).
+  function deleteRecurringItem(type, id) {
     update(g => {
-      if (!g.monthHidden?.[month]) return g;
-      g.monthHidden[month] = g.monthHidden[month].filter(x => x !== id);
+      if (type === "renda") {
+        g.rendas = (g.rendas || []).filter(i => i.id !== id);
+      } else {
+        g.despesas = (g.despesas || []).filter(i => i.id !== id);
+      }
+      if (g.overrides) {
+        Object.keys(g.overrides).forEach(m => { delete g.overrides[m][id]; });
+      }
+      if (g.monthHidden) {
+        Object.keys(g.monthHidden).forEach(m => {
+          g.monthHidden[m] = g.monthHidden[m].filter(x => x !== id);
+        });
+      }
       return g;
     });
   }
@@ -286,17 +308,31 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     const val = isMonthItem ? item.amount : getVal(item);
     const overridden = !isMonthItem && overrides[item.id] !== undefined;
     const active = isMonthItem ? true : item.active;
+    const confirmingDelete = !isMonthItem && deleteConfirmId === item.id;
+
+    if (confirmingDelete) {
+      return (
+        <div className="py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+          <ConfirmBar
+            message={`Excluir "${item.name}" para sempre? Ele some de todos os meses (diferente de pausar).`}
+            onConfirm={() => { deleteRecurringItem(tipo, item.id); setDeleteConfirmId(null); }}
+            onCancel={() => setDeleteConfirmId(null)}
+          />
+        </div>
+      );
+    }
 
     return (
       <div
         className="flex items-center gap-2 py-2 border-b last:border-0"
         style={{ borderColor: "var(--border)", opacity: active ? 1 : 0.45 }}
       >
-        {/* active toggle */}
+        {/* pause/resume toggle */}
         {!isMonthItem && (
           <button
             onClick={() => toggleActive(tipo === "renda" ? "renda" : "despesa", item.id)}
             className="shrink-0 w-4 h-4 rounded-full border flex items-center justify-center transition-colors"
+            title={active ? "Pausar (some da lista e do total, mas continua salvo)" : "Reativar"}
             style={{
               background: active ? "var(--positive)" : "transparent",
               borderColor: active ? "var(--positive)" : "var(--border-strong)",
@@ -342,31 +378,53 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
           <button
             onClick={() => {
               if (isMonthItem) deleteMonthItem(item.id);
-              else hideItem(item.id);
+              else setDeleteConfirmId(item.id);
             }}
-            className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-sm font-bold"
+            className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-sm"
+            title={isMonthItem ? "Excluir este lançamento do mês" : "Excluir para sempre"}
             style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)" }}
           >
-            ×
+            {isMonthItem ? "×" : "🗑"}
           </button>
         )}
       </div>
     );
   }
 
-  function HiddenRow({ item }) {
+  function HiddenRow({ item, tipo }) {
+    if (deleteConfirmId === item.id) {
+      return (
+        <div className="py-1.5">
+          <ConfirmBar
+            message={`Excluir "${item.name}" para sempre?`}
+            onConfirm={() => { deleteRecurringItem(tipo, item.id); setDeleteConfirmId(null); }}
+            onCancel={() => setDeleteConfirmId(null)}
+          />
+        </div>
+      );
+    }
     return (
       <div className="flex items-center gap-2 py-1.5" style={{ opacity: 0.5 }}>
         <button
-          onClick={() => unhideItem(item.id)}
+          onClick={() => restoreItem(tipo, item.id)}
           className="shrink-0 text-base"
-          title="Mostrar"
+          title="Reativar"
           style={{ color: "var(--text-muted)" }}
         >
           👁
         </button>
         <span className="flex-1 text-xs truncate" style={{ color: "var(--text-muted)" }}>{item.name}</span>
         <span className="text-xs font-mono" style={{ color: "var(--text-muted)" }}>{YEN(getVal(item))}</span>
+        {editMode && (
+          <button
+            onClick={() => setDeleteConfirmId(item.id)}
+            className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-xs"
+            title="Excluir para sempre"
+            style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)" }}
+          >
+            🗑
+          </button>
+        )}
       </div>
     );
   }
@@ -511,7 +569,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             {/* hidden items */}
             {hiddenRendas.length > 0 && (
               <div className="mt-1 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
-                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Ocultos</p>
+                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Pausados (👁 reativa · 🗑 exclui de vez)</p>
                 {hiddenRendas.map(r => <HiddenRow key={r.id} item={r} tipo="renda" />)}
               </div>
             )}
@@ -564,7 +622,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
 
             {hiddenDebito.length > 0 && (
               <div className="mt-1 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
-                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Ocultos</p>
+                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Pausados (👁 reativa · 🗑 exclui de vez)</p>
                 {hiddenDebito.map(d => <HiddenRow key={d.id} item={d} tipo="debito" />)}
               </div>
             )}
@@ -615,7 +673,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
 
             {hiddenHagaki.length > 0 && (
               <div className="mt-1 pt-1 border-t" style={{ borderColor: "var(--border)" }}>
-                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Ocultos</p>
+                <p className="text-xs mb-1" style={{ color: "var(--text-muted)" }}>Pausados (👁 reativa · 🗑 exclui de vez)</p>
                 {hiddenHagaki.map(d => <HiddenRow key={d.id} item={d} tipo="hagaki" />)}
               </div>
             )}
