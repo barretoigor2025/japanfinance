@@ -100,10 +100,10 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       const arr = type === "renda" ? g.rendas : g.despesas;
       const item = (arr || []).find(i => i.id === id);
       if (item) item.active = true;
-      if (g.monthHidden) {
-        Object.keys(g.monthHidden).forEach(m => {
-          g.monthHidden[m] = g.monthHidden[m].filter(x => x !== id);
-        });
+      // Só limpa o "oculto" do mês que está sendo visto agora — um item
+      // escondido em outros meses (dado antigo) deve continuar oculto lá.
+      if (g.monthHidden?.[month]) {
+        g.monthHidden[month] = g.monthHidden[month].filter(x => x !== id);
       }
       return g;
     });
