@@ -25,7 +25,9 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   // modal states
   const [itemModal, setItemModal] = useState(null); // {tipo, id?, name, amount, isMonth}
   const [cartaoModal, setCartaoModal] = useState(null); // {id?, nome, valor}
-  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // id do item fixo pendente de confirmação de exclusão
+  const [deleteConfirmId, setDeleteConfirmId] = useState(null); // id pendente de confirmação de exclusão (item fixo, do mês ou cartão)
+  const [modalConfirming, setModalConfirming] = useState(false); // true = mostrando resumo antes de salvar itemModal/cartaoModal
+  const [resetConfirm, setResetConfirm] = useState(null); // {tipo, month} pendente de confirmação de "Zerar seção"
 
   function showToast(msg) {
     setToast(msg);
@@ -37,12 +39,16 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   const monthHidden = gastos.monthHidden?.[month] || [];
   const monthItems = gastos.monthItems?.[month] || [];
   const cartaoItems = gastos.cartao?.[month] || [];
+  const monthPaid = gastos.monthPaid?.[month] || [];
 
   function getVal(item) {
     return overrides[item.id] !== undefined ? overrides[item.id] : item.amount;
   }
   function isHidden(id) {
     return monthHidden.includes(id);
+  }
+  function isPaid(id) {
+    return monthPaid.includes(id);
   }
 
   const activeRendas = (gastos.rendas || []).filter(r => r.active && !isHidden(r.id));
@@ -68,6 +74,12 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   const totalHagaki =
     activeHagaki.reduce((s, d) => s + getVal(d), 0) +
     monthHagakiItems.reduce((s, d) => s + d.amount, 0);
+
+  // Só o que ainda falta pagar — usado no aviso de "precisa sacar em mãos",
+  // já que o valor já pago não precisa mais ser sacado.
+  const totalHagakiPendente =
+    activeHagaki.filter(d => !isPaid(d.id)).reduce((s, d) => s + getVal(d), 0) +
+    monthHagakiItems.filter(d => !isPaid(d.id)).reduce((s, d) => s + d.amount, 0);
 
   const totalCartao = cartaoItems.reduce((s, c) => s + (c.valor || 0), 0);
 
@@ -126,6 +138,24 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
           g.monthHidden[m] = g.monthHidden[m].filter(x => x !== id);
         });
       }
+      if (g.monthPaid) {
+        Object.keys(g.monthPaid).forEach(m => {
+          g.monthPaid[m] = g.monthPaid[m].filter(x => x !== id);
+        });
+      }
+      return g;
+    });
+  }
+
+  // Marca/desmarca um item (débito ou hagaki) como já pago neste mês —
+  // reseta sozinho a cada mês, já que monthPaid é chaveado por mês.
+  function togglePaid(id) {
+    update(g => {
+      if (!g.monthPaid) g.monthPaid = {};
+      if (!g.monthPaid[month]) g.monthPaid[month] = [];
+      const arr = g.monthPaid[month];
+      const idx = arr.indexOf(id);
+      if (idx === -1) arr.push(id); else arr.splice(idx, 1);
       return g;
     });
   }
@@ -135,8 +165,27 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       if (!g.monthItems) g.monthItems = {};
       if (!g.monthItems[month]) g.monthItems[month] = [];
       g.monthItems[month] = g.monthItems[month].filter(i => i.id !== id);
+      if (g.monthPaid?.[month]) {
+        g.monthPaid[month] = g.monthPaid[month].filter(x => x !== id);
+      }
       return g;
     });
+  }
+
+  function itemModalConfirmMessage() {
+    if (!itemModal) return "";
+    const amount = parseFloat(String(itemModal.amount).replace(/[^0-9.]/g, "")) || 0;
+    const name = itemModal.name || "(sem nome)";
+    if (!itemModal.id) {
+      const scope = itemModal.isMonth ? "só este mês" : "fixo, todos os meses";
+      return `Adicionar "${name}" (${scope}) — ${YEN(amount)}?`;
+    }
+    if (itemModal.isMonth) {
+      return `Salvar "${name}" — ${YEN(amount)}?`;
+    }
+    return itemModal.nameChanged
+      ? `Salvar "${name}" (nome/valor padrão) e usar ${YEN(amount)} neste mês?`
+      : `Alterar o valor de "${name}" para ${YEN(amount)} neste mês?`;
   }
 
   function saveItemModal() {
@@ -187,7 +236,8 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         update(g => { g.despesas = [...(g.despesas || []), { ...newItem, tipo: itemModal.tipo }]; return g; });
       }
     }
-    setItemModal(null);
+    closeItemModal();
+    showToast("✓ Salvo!");
   }
 
   function resetOverride(id) {
@@ -197,15 +247,15 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     });
   }
 
-  function resetSection(tipo) {
-    // set all active items of tipo to 0 for this month via overrides
+  function resetSection(tipo, targetMonth) {
+    // set all active items of tipo to 0 for targetMonth via overrides
     update(g => {
       if (!g.overrides) g.overrides = {};
-      if (!g.overrides[month]) g.overrides[month] = {};
+      if (!g.overrides[targetMonth]) g.overrides[targetMonth] = {};
       (g.despesas || []).filter(d => d.tipo === tipo && d.active).forEach(d => {
-        g.overrides[month][d.id] = 0;
+        g.overrides[targetMonth][d.id] = 0;
       });
-      (g.monthItems?.[month] || []).filter(i => i.tipo === tipo).forEach(i => {
+      (g.monthItems?.[targetMonth] || []).filter(i => i.tipo === tipo).forEach(i => {
         i.amount = 0;
       });
       return g;
@@ -213,6 +263,18 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   }
 
   // ── cartão mutators ────────────────────────────────────────────────────────
+  function cartaoModalConfirmMessage() {
+    if (!cartaoModal) return "";
+    const valor = parseFloat(String(cartaoModal.valor).replace(/[^0-9.]/g, "")) || 0;
+    const nome = cartaoModal.nome || "(sem nome)";
+    return cartaoModal.id ? `Salvar "${nome}" — ${YEN(valor)}?` : `Adicionar "${nome}" — ${YEN(valor)}?`;
+  }
+
+  function closeCartaoModal() {
+    setCartaoModal(null);
+    setModalConfirming(false);
+  }
+
   function saveCartaoModal() {
     if (!cartaoModal) return;
     const valor = parseFloat(String(cartaoModal.valor).replace(/[^0-9.]/g, "")) || 0;
@@ -227,7 +289,8 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       }
       return g;
     });
-    setCartaoModal(null);
+    closeCartaoModal();
+    showToast("✓ Salvo!");
   }
 
   function deleteCartaoItem(id) {
@@ -253,18 +316,22 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     lines.push("");
 
     if (totalDebito > 0) {
+      const debitoAll = [...activeDebito, ...monthDebito];
+      const debitoPagos = debitoAll.filter(d => isPaid(d.id)).length;
       lines.push("🏦 *DÉBITO AUTOMÁTICO*");
-      activeDebito.forEach(d => lines.push(`  ${d.name}: ${YEN(getVal(d))}`));
-      monthDebito.forEach(d => lines.push(`  ${d.name}: ${YEN(d.amount)}`));
-      lines.push(`  Total: ${YEN(totalDebito)}`);
+      activeDebito.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(getVal(d))}`));
+      monthDebito.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(d.amount)}`));
+      lines.push(`  Total: ${YEN(totalDebito)} (debitado ${debitoPagos}/${debitoAll.length})`);
       lines.push("");
     }
 
     if (totalHagaki > 0) {
+      const hagakiAll = [...activeHagaki, ...monthHagakiItems];
+      const hagakiPagos = hagakiAll.filter(d => isPaid(d.id)).length;
       lines.push("📮 *HAGAKI (Boleto)*");
-      activeHagaki.forEach(d => lines.push(`  ${d.name}: ${YEN(getVal(d))}`));
-      monthHagakiItems.forEach(d => lines.push(`  ${d.name}: ${YEN(d.amount)}`));
-      lines.push(`  Total: ${YEN(totalHagaki)}`);
+      activeHagaki.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(getVal(d))}`));
+      monthHagakiItems.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(d.amount)}`));
+      lines.push(`  Total: ${YEN(totalHagaki)} (pago ${hagakiPagos}/${hagakiAll.length})`);
       lines.push("");
     }
 
@@ -282,25 +349,33 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     if (totalCartao > 0) lines.push(`Cartão: ${YEN(totalCartao)}`);
     lines.push(`*Total Despesas: ${YEN(totalDespesas)}*`);
     lines.push(saldo >= 0 ? `*Saldo Final: +${YEN(saldo)}*` : `*Saldo Final: -${YEN(Math.abs(saldo))}*`);
-    if (totalHagaki > 0) lines.push(`💵 Precisa sacar em mãos: ${YEN(totalHagaki)}`);
+    if (totalHagakiPendente > 0) lines.push(`💵 Precisa sacar em mãos: ${YEN(totalHagakiPendente)}`);
 
     navigator.clipboard.writeText(lines.join("\n")).then(() => showToast("✓ Copiado!"));
   }
 
   // ── open item modal helpers ────────────────────────────────────────────────
   function openAddFixed(tipo) {
+    setModalConfirming(false);
     setItemModal({ tipo, id: null, name: "", amount: "", isMonth: false });
   }
   function openAddMonth(tipo) {
+    setModalConfirming(false);
     setItemModal({ tipo, id: null, name: "", amount: "", isMonth: true });
   }
   function openEditRecurring(item, tipo) {
     if (!editMode) return;
+    setModalConfirming(false);
     setItemModal({ tipo, id: item.id, name: item.name, amount: getVal(item), isMonth: false, nameChanged: false });
   }
   function openEditMonthItem(item, tipo) {
     if (!editMode) return;
+    setModalConfirming(false);
     setItemModal({ tipo, id: item.id, name: item.name, amount: item.amount, isMonth: true });
+  }
+  function closeItemModal() {
+    setItemModal(null);
+    setModalConfirming(false);
   }
 
   // ── render helpers ─────────────────────────────────────────────────────────
@@ -308,14 +383,23 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     const val = isMonthItem ? item.amount : getVal(item);
     const overridden = !isMonthItem && overrides[item.id] !== undefined;
     const active = isMonthItem ? true : item.active;
-    const confirmingDelete = !isMonthItem && deleteConfirmId === item.id;
+    const paid = isPaid(item.id);
+    const showPaidToggle = tipo === "debito" || tipo === "hagaki";
+    const confirmingDelete = deleteConfirmId === item.id;
 
     if (confirmingDelete) {
+      const message = isMonthItem
+        ? `Excluir "${item.name}" (lançamento deste mês)?`
+        : `Excluir "${item.name}" para sempre? Ele some de todos os meses (diferente de pausar).`;
       return (
         <div className="py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
           <ConfirmBar
-            message={`Excluir "${item.name}" para sempre? Ele some de todos os meses (diferente de pausar).`}
-            onConfirm={() => { deleteRecurringItem(tipo, item.id); setDeleteConfirmId(null); }}
+            message={message}
+            onConfirm={() => {
+              if (isMonthItem) deleteMonthItem(item.id);
+              else deleteRecurringItem(tipo, item.id);
+              setDeleteConfirmId(null);
+            }}
             onCancel={() => setDeleteConfirmId(null)}
           />
         </div>
@@ -327,6 +411,26 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         className="flex items-center gap-2 py-2 border-b last:border-0"
         style={{ borderColor: "var(--border)", opacity: active ? 1 : 0.45 }}
       >
+        {/* paid/debited checkbox */}
+        {showPaidToggle && (
+          <button
+            onClick={() => togglePaid(item.id)}
+            className="shrink-0 w-5 h-5 rounded-md border flex items-center justify-center text-xs font-bold transition-colors"
+            title={
+              tipo === "debito"
+                ? (paid ? "Já debitou este mês (toque para desmarcar)" : "Marcar como debitado este mês")
+                : (paid ? "Pago este mês (toque para desmarcar)" : "Marcar como pago este mês")
+            }
+            style={{
+              background: paid ? "var(--positive)" : "transparent",
+              borderColor: paid ? "var(--positive)" : "var(--border-strong)",
+              color: "#fff",
+            }}
+          >
+            {paid ? "✓" : ""}
+          </button>
+        )}
+
         {/* pause/resume toggle */}
         {!isMonthItem && (
           <button
@@ -343,7 +447,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         {/* name */}
         <span
           className="flex-1 text-sm truncate"
-          style={{ color: "var(--text)" }}
+          style={{ color: paid ? "var(--text-muted)" : "var(--text)", textDecoration: paid ? "line-through" : "none" }}
           onClick={() => isMonthItem ? openEditMonthItem(item, tipo) : openEditRecurring(item, tipo)}
         >
           {item.name || item.nome}
@@ -376,10 +480,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         {/* edit mode actions */}
         {editMode && (
           <button
-            onClick={() => {
-              if (isMonthItem) deleteMonthItem(item.id);
-              else setDeleteConfirmId(item.id);
-            }}
+            onClick={() => setDeleteConfirmId(item.id)}
             className="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-sm"
             title={isMonthItem ? "Excluir este lançamento do mês" : "Excluir para sempre"}
             style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)" }}
@@ -540,12 +641,12 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         )}
 
         {/* precisa sacar warning */}
-        {totalHagaki > 0 && (
+        {totalHagakiPendente > 0 && (
           <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)" }}>
             <span className="text-base">💴</span>
             <div>
               <span className="text-xs font-semibold" style={{ color: "var(--warning)" }}>Precisa sacar em mãos:</span>
-              <span className="text-sm font-mono font-bold ml-2" style={{ color: "var(--warning)" }}>{YEN(totalHagaki)}</span>
+              <span className="text-sm font-mono font-bold ml-2" style={{ color: "var(--warning)" }}>{YEN(totalHagakiPendente)}</span>
             </div>
           </div>
         )}
@@ -600,7 +701,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             <SectionLabel>🏦 Débito Automático</SectionLabel>
             {editMode && (
               <button
-                onClick={() => resetSection("debito")}
+                onClick={() => setResetConfirm({ tipo: "debito", month })}
                 className="text-xs px-2 py-0.5 rounded"
                 style={{ color: "var(--warning)", background: "rgba(245,158,11,0.1)" }}
                 title="Zerar seção este mês"
@@ -609,6 +710,15 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
               </button>
             )}
           </div>
+          {resetConfirm?.tipo === "debito" && resetConfirm.month === month && (
+            <div className="mb-1.5">
+              <ConfirmBar
+                message="Zerar o valor de todos os itens de Débito Automático neste mês?"
+                onConfirm={() => { resetSection("debito", resetConfirm.month); setResetConfirm(null); }}
+                onCancel={() => setResetConfirm(null)}
+              />
+            </div>
+          )}
           <Card>
             {activeDebito.map(d => (
               <ItemRow key={d.id} item={d} tipo="debito" />
@@ -651,7 +761,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             <SectionLabel>📮 Hagaki (Boleto)</SectionLabel>
             {editMode && (
               <button
-                onClick={() => resetSection("hagaki")}
+                onClick={() => setResetConfirm({ tipo: "hagaki", month })}
                 className="text-xs px-2 py-0.5 rounded"
                 style={{ color: "var(--warning)", background: "rgba(245,158,11,0.1)" }}
                 title="Zerar seção este mês"
@@ -660,6 +770,15 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
               </button>
             )}
           </div>
+          {resetConfirm?.tipo === "hagaki" && resetConfirm.month === month && (
+            <div className="mb-1.5">
+              <ConfirmBar
+                message="Zerar o valor de todos os itens de Hagaki neste mês?"
+                onConfirm={() => { resetSection("hagaki", resetConfirm.month); setResetConfirm(null); }}
+                onCancel={() => setResetConfirm(null)}
+              />
+            </div>
+          )}
           <Card>
             {activeHagaki.map(d => (
               <ItemRow key={d.id} item={d} tipo="hagaki" />
@@ -706,24 +825,34 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
               <p className="text-xs py-2 text-center" style={{ color: "var(--text-muted)" }}>Nenhum lançamento</p>
             )}
             {cartaoItems.map(c => (
-              <div key={c.id} className="flex items-center gap-2 py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
-                <span className="flex-1 text-sm truncate" style={{ color: "var(--text)" }}>{c.nome}</span>
-                <span className="text-sm font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>{YEN(c.valor)}</span>
-                <button
-                  onClick={() => setCartaoModal({ id: c.id, nome: c.nome, valor: c.valor })}
-                  className="w-6 h-6 flex items-center justify-center rounded text-xs"
-                  style={{ background: "var(--bg-elevated)", color: "var(--text-sub)" }}
-                >
-                  ✏️
-                </button>
-                <button
-                  onClick={() => deleteCartaoItem(c.id)}
-                  className="w-6 h-6 flex items-center justify-center rounded text-sm font-bold"
-                  style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)" }}
-                >
-                  ×
-                </button>
-              </div>
+              deleteConfirmId === c.id ? (
+                <div key={c.id} className="py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                  <ConfirmBar
+                    message={`Excluir "${c.nome}"?`}
+                    onConfirm={() => { deleteCartaoItem(c.id); setDeleteConfirmId(null); }}
+                    onCancel={() => setDeleteConfirmId(null)}
+                  />
+                </div>
+              ) : (
+                <div key={c.id} className="flex items-center gap-2 py-2 border-b last:border-0" style={{ borderColor: "var(--border)" }}>
+                  <span className="flex-1 text-sm truncate" style={{ color: "var(--text)" }}>{c.nome}</span>
+                  <span className="text-sm font-mono font-semibold shrink-0" style={{ color: "var(--cc)" }}>{YEN(c.valor)}</span>
+                  <button
+                    onClick={() => { setModalConfirming(false); setCartaoModal({ id: c.id, nome: c.nome, valor: c.valor }); }}
+                    className="w-6 h-6 flex items-center justify-center rounded text-xs"
+                    style={{ background: "var(--bg-elevated)", color: "var(--text-sub)" }}
+                  >
+                    ✏️
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirmId(c.id)}
+                    className="w-6 h-6 flex items-center justify-center rounded text-sm font-bold"
+                    style={{ background: "rgba(239,68,68,0.12)", color: "var(--negative)" }}
+                  >
+                    ×
+                  </button>
+                </div>
+              )
             ))}
 
             {cartaoItems.length > 0 && (
@@ -734,7 +863,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             )}
 
             <button
-              onClick={() => setCartaoModal({ id: null, nome: "", valor: "" })}
+              onClick={() => { setModalConfirming(false); setCartaoModal({ id: null, nome: "", valor: "" }); }}
               className="w-full mt-2 py-1.5 rounded-lg text-xs font-medium"
               style={{ background: "var(--bg-elevated)", color: "var(--cc)", border: "1px solid var(--cc)" }}
             >
@@ -749,8 +878,17 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       {itemModal && (
         <BottomSheet
           title={itemModal.id ? "Editar item" : itemModal.isMonth ? "Adicionar (este mês)" : "Adicionar fixo"}
-          onClose={() => setItemModal(null)}
+          onClose={closeItemModal}
         >
+          {modalConfirming ? (
+            <div className="p-4 flex flex-col gap-4">
+              <ConfirmBar
+                message={itemModalConfirmMessage()}
+                onConfirm={saveItemModal}
+                onCancel={() => setModalConfirming(false)}
+              />
+            </div>
+          ) : (
           <div className="p-4 flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Nome</label>
@@ -802,7 +940,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             {/* restore default */}
             {itemModal.id && !itemModal.isMonth && overrides[itemModal.id] !== undefined && (
               <button
-                onClick={() => { resetOverride(itemModal.id); setItemModal(null); }}
+                onClick={() => { resetOverride(itemModal.id); closeItemModal(); }}
                 className="w-full py-2 rounded-lg text-sm"
                 style={{ background: "rgba(245,158,11,0.08)", color: "var(--warning)", border: "1px solid rgba(245,158,11,0.3)" }}
               >
@@ -812,21 +950,22 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
 
             <div className="flex gap-2 pt-1">
               <button
-                onClick={() => setItemModal(null)}
+                onClick={closeItemModal}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                 style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={saveItemModal}
+                onClick={() => { if (itemModal.name.trim()) setModalConfirming(true); }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ background: "var(--positive)", color: "#fff" }}
               >
-                Confirmar
+                Salvar
               </button>
             </div>
           </div>
+          )}
         </BottomSheet>
       )}
 
@@ -834,8 +973,17 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       {cartaoModal && (
         <BottomSheet
           title={cartaoModal.id ? "Editar lançamento" : "Novo lançamento"}
-          onClose={() => setCartaoModal(null)}
+          onClose={closeCartaoModal}
         >
+          {modalConfirming ? (
+            <div className="p-4 flex flex-col gap-4">
+              <ConfirmBar
+                message={cartaoModalConfirmMessage()}
+                onConfirm={saveCartaoModal}
+                onCancel={() => setModalConfirming(false)}
+              />
+            </div>
+          ) : (
           <div className="p-4 flex flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Descrição</label>
@@ -885,21 +1033,22 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
 
             <div className="flex gap-2 pt-1">
               <button
-                onClick={() => setCartaoModal(null)}
+                onClick={closeCartaoModal}
                 className="flex-1 py-2.5 rounded-xl text-sm font-medium"
                 style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border-mid)" }}
               >
                 Cancelar
               </button>
               <button
-                onClick={saveCartaoModal}
+                onClick={() => { if (cartaoModal.nome.trim()) setModalConfirming(true); }}
                 className="flex-1 py-2.5 rounded-xl text-sm font-semibold"
                 style={{ background: "var(--cc)", color: "#fff" }}
               >
-                Confirmar
+                Salvar
               </button>
             </div>
           </div>
+          )}
         </BottomSheet>
       )}
 
