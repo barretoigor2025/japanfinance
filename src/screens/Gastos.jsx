@@ -321,7 +321,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
       lines.push("🏦 *DÉBITO AUTOMÁTICO*");
       activeDebito.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(getVal(d))}`));
       monthDebito.forEach(d => lines.push(`  ${isPaid(d.id) ? "✅" : "⬜"} ${d.name}: ${YEN(d.amount)}`));
-      lines.push(`  Total: ${YEN(totalDebito)} (pago ${debitoPagos}/${debitoAll.length})`);
+      lines.push(`  Total: ${YEN(totalDebito)} (debitado ${debitoPagos}/${debitoAll.length})`);
       lines.push("");
     }
 
@@ -411,12 +411,16 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         className="flex items-center gap-2 py-2 border-b last:border-0"
         style={{ borderColor: "var(--border)", opacity: active ? 1 : 0.45 }}
       >
-        {/* paid checkbox */}
+        {/* paid/debited checkbox */}
         {showPaidToggle && (
           <button
             onClick={() => togglePaid(item.id)}
             className="shrink-0 w-5 h-5 rounded-md border flex items-center justify-center text-xs font-bold transition-colors"
-            title={paid ? "Pago este mês (toque para desmarcar)" : "Marcar como pago este mês"}
+            title={
+              tipo === "debito"
+                ? (paid ? "Já debitou este mês (toque para desmarcar)" : "Marcar como debitado este mês")
+                : (paid ? "Pago este mês (toque para desmarcar)" : "Marcar como pago este mês")
+            }
             style={{
               background: paid ? "var(--positive)" : "transparent",
               borderColor: paid ? "var(--positive)" : "var(--border-strong)",
