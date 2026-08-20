@@ -27,7 +27,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   const [cartaoModal, setCartaoModal] = useState(null); // {id?, nome, valor}
   const [deleteConfirmId, setDeleteConfirmId] = useState(null); // id pendente de confirmação de exclusão (item fixo, do mês ou cartão)
   const [modalConfirming, setModalConfirming] = useState(false); // true = mostrando resumo antes de salvar itemModal/cartaoModal
-  const [resetConfirm, setResetConfirm] = useState(null); // tipo pendente de confirmação de "Zerar seção"
+  const [resetConfirm, setResetConfirm] = useState(null); // {tipo, month} pendente de confirmação de "Zerar seção"
 
   function showToast(msg) {
     setToast(msg);
@@ -74,6 +74,12 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
   const totalHagaki =
     activeHagaki.reduce((s, d) => s + getVal(d), 0) +
     monthHagakiItems.reduce((s, d) => s + d.amount, 0);
+
+  // Só o que ainda falta pagar — usado no aviso de "precisa sacar em mãos",
+  // já que o valor já pago não precisa mais ser sacado.
+  const totalHagakiPendente =
+    activeHagaki.filter(d => !isPaid(d.id)).reduce((s, d) => s + getVal(d), 0) +
+    monthHagakiItems.filter(d => !isPaid(d.id)).reduce((s, d) => s + d.amount, 0);
 
   const totalCartao = cartaoItems.reduce((s, c) => s + (c.valor || 0), 0);
 
@@ -241,15 +247,15 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     });
   }
 
-  function resetSection(tipo) {
-    // set all active items of tipo to 0 for this month via overrides
+  function resetSection(tipo, targetMonth) {
+    // set all active items of tipo to 0 for targetMonth via overrides
     update(g => {
       if (!g.overrides) g.overrides = {};
-      if (!g.overrides[month]) g.overrides[month] = {};
+      if (!g.overrides[targetMonth]) g.overrides[targetMonth] = {};
       (g.despesas || []).filter(d => d.tipo === tipo && d.active).forEach(d => {
-        g.overrides[month][d.id] = 0;
+        g.overrides[targetMonth][d.id] = 0;
       });
-      (g.monthItems?.[month] || []).filter(i => i.tipo === tipo).forEach(i => {
+      (g.monthItems?.[targetMonth] || []).filter(i => i.tipo === tipo).forEach(i => {
         i.amount = 0;
       });
       return g;
@@ -343,7 +349,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
     if (totalCartao > 0) lines.push(`Cartão: ${YEN(totalCartao)}`);
     lines.push(`*Total Despesas: ${YEN(totalDespesas)}*`);
     lines.push(saldo >= 0 ? `*Saldo Final: +${YEN(saldo)}*` : `*Saldo Final: -${YEN(Math.abs(saldo))}*`);
-    if (totalHagaki > 0) lines.push(`💵 Precisa sacar em mãos: ${YEN(totalHagaki)}`);
+    if (totalHagakiPendente > 0) lines.push(`💵 Precisa sacar em mãos: ${YEN(totalHagakiPendente)}`);
 
     navigator.clipboard.writeText(lines.join("\n")).then(() => showToast("✓ Copiado!"));
   }
@@ -631,12 +637,12 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
         )}
 
         {/* precisa sacar warning */}
-        {totalHagaki > 0 && (
+        {totalHagakiPendente > 0 && (
           <div className="rounded-xl px-3 py-2.5 flex items-center gap-2" style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.3)" }}>
             <span className="text-base">💴</span>
             <div>
               <span className="text-xs font-semibold" style={{ color: "var(--warning)" }}>Precisa sacar em mãos:</span>
-              <span className="text-sm font-mono font-bold ml-2" style={{ color: "var(--warning)" }}>{YEN(totalHagaki)}</span>
+              <span className="text-sm font-mono font-bold ml-2" style={{ color: "var(--warning)" }}>{YEN(totalHagakiPendente)}</span>
             </div>
           </div>
         )}
@@ -691,7 +697,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             <SectionLabel>🏦 Débito Automático</SectionLabel>
             {editMode && (
               <button
-                onClick={() => setResetConfirm("debito")}
+                onClick={() => setResetConfirm({ tipo: "debito", month })}
                 className="text-xs px-2 py-0.5 rounded"
                 style={{ color: "var(--warning)", background: "rgba(245,158,11,0.1)" }}
                 title="Zerar seção este mês"
@@ -700,11 +706,11 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
               </button>
             )}
           </div>
-          {resetConfirm === "debito" && (
+          {resetConfirm?.tipo === "debito" && resetConfirm.month === month && (
             <div className="mb-1.5">
               <ConfirmBar
                 message="Zerar o valor de todos os itens de Débito Automático neste mês?"
-                onConfirm={() => { resetSection("debito"); setResetConfirm(null); }}
+                onConfirm={() => { resetSection("debito", resetConfirm.month); setResetConfirm(null); }}
                 onCancel={() => setResetConfirm(null)}
               />
             </div>
@@ -751,7 +757,7 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
             <SectionLabel>📮 Hagaki (Boleto)</SectionLabel>
             {editMode && (
               <button
-                onClick={() => setResetConfirm("hagaki")}
+                onClick={() => setResetConfirm({ tipo: "hagaki", month })}
                 className="text-xs px-2 py-0.5 rounded"
                 style={{ color: "var(--warning)", background: "rgba(245,158,11,0.1)" }}
                 title="Zerar seção este mês"
@@ -760,11 +766,11 @@ export function Gastos({ gastos, setGastos, carro, setCarro }) {
               </button>
             )}
           </div>
-          {resetConfirm === "hagaki" && (
+          {resetConfirm?.tipo === "hagaki" && resetConfirm.month === month && (
             <div className="mb-1.5">
               <ConfirmBar
                 message="Zerar o valor de todos os itens de Hagaki neste mês?"
-                onConfirm={() => { resetSection("hagaki"); setResetConfirm(null); }}
+                onConfirm={() => { resetSection("hagaki", resetConfirm.month); setResetConfirm(null); }}
                 onCancel={() => setResetConfirm(null)}
               />
             </div>
