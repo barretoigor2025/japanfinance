@@ -2,9 +2,16 @@ import { useState } from "react";
 import { Card, MonthPicker, SectionLabel, Badge } from "../components/ui.jsx";
 import { calcDay, estimateDeductions } from "../utils/calc.js";
 import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
+import { buildHoursReportText } from "../utils/hoursReport.js";
 
 function ReportsTab({ entries, settings }) {
   const [month, setMonth] = useState(currentMonth);
+  const [toast, setToast] = useState("");
+
+  function showToast(msg) {
+    setToast(msg);
+    setTimeout(() => setToast(""), 2200);
+  }
 
   const monthEntries = entries
     .filter(e => e.date.slice(0, 7) === month)
@@ -28,6 +35,12 @@ function ReportsTab({ entries, settings }) {
   const yukyuDays = monthEntries.filter(e => e.dayType === "yukyu").length;
   const workedDays = monthEntries.filter(e => e.dayType !== "yukyu").length;
 
+  // ── WhatsApp hours report ──────────────────────────────────────────────────
+  function copyHoursReport() {
+    const text = buildHoursReportText(entries, settings, month);
+    navigator.clipboard.writeText(text).then(() => showToast("✓ Copiado!"));
+  }
+
   function exportCSV() {
     const rows = [["Data", "Tipo", "Entrada", "Saída", "Break(m)", "Total(h)", "HE(h)", "Noturno(h)", "Bruto(¥)"]];
     monthEntries.forEach((e, i) => {
@@ -47,6 +60,7 @@ function ReportsTab({ entries, settings }) {
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <div className="flex-1"><MonthPicker value={month} onChange={setMonth} /></div>
+        <button onClick={copyHoursReport} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--border-mid)", color: "var(--text-sub)" }} title="Copiar relatório de horas (WhatsApp)">📋</button>
         <button onClick={exportCSV} className="px-3 py-1.5 rounded-lg text-xs font-medium" style={{ border: "1px solid var(--border-mid)", color: "var(--text-sub)" }}>CSV</button>
       </div>
 
@@ -170,6 +184,15 @@ function ReportsTab({ entries, settings }) {
             </table>
           </div>
         </Card>
+      )}
+
+      {toast && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl text-sm font-semibold z-50 pointer-events-none"
+          style={{ background: "var(--positive)", color: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}
+        >
+          {toast}
+        </div>
       )}
     </div>
   );
