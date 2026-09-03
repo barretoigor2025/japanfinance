@@ -20,7 +20,7 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
   const { appBruto, appLiquido } = useMemo(() => {
     const monthEntries = entries.filter(e => e.date.slice(0, 7) === auditMonth);
     if (monthEntries.length === 0) return { appBruto: 0, appLiquido: 0 };
-    const gross = calcMonthEntries(monthEntries, settings).reduce((a, c) => a + c.grossPay, 0);
+    const gross = calcMonthEntries(entries, settings, auditMonth).reduce((a, c) => a + c.grossPay, 0);
     const teate = (settings.teate || []).filter(t => t.active).reduce((a, t) => a + (t.amount || 0), 0);
     const grossWithTeate = gross + teate;
     const { netPay } = estimateDeductions(grossWithTeate, settings);

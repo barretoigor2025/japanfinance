@@ -17,7 +17,7 @@ function ReportsTab({ entries, settings }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = calcMonthEntries(monthEntries, settings);
+  const calcs = calcMonthEntries(entries, settings, month);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
@@ -215,7 +215,7 @@ function CompareTab({ entries, settings }) {
 
   const monthlyData = months.map(month => {
     const mEntries = monthMap[month].sort((a, b) => a.date.localeCompare(b.date));
-    const calcs = calcMonthEntries(mEntries, settings);
+    const calcs = calcMonthEntries(entries, settings, month);
     const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
     const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
     const grossSalary = calcs.reduce((a, c) => a + c.grossPay, 0);

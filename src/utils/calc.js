@@ -229,21 +229,31 @@ function isoWeekStart(dateStr) {
   return d.toISOString().slice(0, 10);
 }
 
-// Calcula uma lista de lançamentos (tipicamente um mês) de uma vez, na
-// ordem cronológica, usando banco de horas semanal (limite de weeklyHours
-// por semana, ao invés de dailyHours por dia) — é assim que a empresa
-// (cooperativa de caminhoneiros com jornada variável, 変形労働時間制) paga
-// os turnos longos de "dobra" na prática, conferido contra o holerite
-// real. A separação mensal em hora extra normal/alta (limiar de 60h)
-// continua igual.
-export function calcMonthEntries(entries, settings) {
+// Calcula os lançamentos de um mês usando banco de horas semanal (limite
+// de weeklyHours por semana, ao invés de dailyHours por dia) — é assim
+// que a empresa (cooperativa de caminhoneiros com jornada variável,
+// 変形労働時間制) paga os turnos longos de "dobra" na prática, conferido
+// contra o holerite real. A separação mensal em hora extra normal/alta
+// (limiar de 60h) continua igual.
+//
+// Recebe TODOS os lançamentos (não só os do mês): quando o mês começa no
+// meio de uma semana ISO, os dias já trabalhados no fim do mês anterior
+// contam pra semana compartilhada, senão a semana "reinicia" zerada e a
+// hora extra dos primeiros dias do mês fica subestimada. Só os
+// lançamentos do mês pedido entram no resultado.
+export function calcMonthEntries(allEntries, settings, month) {
   const rules = getRules(settings);
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...allEntries].sort((a, b) => a.date.localeCompare(b.date));
+
+  const weekCtxStart = isoWeekStart(`${month}-01`);
+  const [y, m] = month.split("-").map(Number);
+  const monthEnd = new Date(y, m, 0).toISOString().slice(0, 10);
+  const windowEntries = sorted.filter(e => e.date >= weekCtxStart && e.date <= monthEnd);
 
   const weeklyLimit = (rules.weeklyHours || 40) * 60;
   const weekRunningMin = {};
 
-  const splits = sorted.map(e => {
+  const splits = windowEntries.map(e => {
     if (e.dayType === "yukyu" || e.dayType === "holiday" || e.dayType === "saturday") {
       return null; // esses casos não usam overrideSplit (ver calcDay)
     }
@@ -262,11 +272,14 @@ export function calcMonthEntries(entries, settings) {
   });
 
   let accOT = 0;
-  return sorted.map((e, i) => {
+  const results = [];
+  windowEntries.forEach((e, i) => {
+    if (e.date.slice(0, 7) !== month) return; // contexto da semana anterior, fora do resultado
     const c = calcDay(e, settings, accOT, splits[i]);
     accOT += c.overtimeHours;
-    return c;
+    results.push(c);
   });
+  return results;
 }
 
 export function estimateDeductions(grossMonthly, settings) {
