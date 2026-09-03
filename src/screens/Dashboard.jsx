@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, MonthPicker } from "../components/ui.jsx";
-import { calcDay, estimateDeductions } from "../utils/calc.js";
+import { calcDay, calcMonthEntries, estimateDeductions } from "../utils/calc.js";
 import { getYukyuEntitlement } from "../utils/yukyu.js";
 import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
 import { EntryForm } from "../components/EntryForm.jsx";
@@ -15,12 +15,7 @@ export function Dashboard({ entries, settings, onAddEntry }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = monthEntries.reduce((acc, e) => {
-    const c = calcDay(e, settings, acc.total);
-    acc.total += c.overtimeHours;
-    acc.list.push(c);
-    return acc;
-  }, { total: 0, list: [] }).list;
+  const calcs = calcMonthEntries(monthEntries, settings);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);

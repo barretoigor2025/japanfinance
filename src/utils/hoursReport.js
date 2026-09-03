@@ -1,4 +1,4 @@
-import { calcDay, getRules, estimateDeductions } from "./calc.js";
+import { calcMonthEntries, getRules, estimateDeductions } from "./calc.js";
 import { YEN, fmtDate } from "./fmt.js";
 
 // Monta o texto do relatório de horas (estilo WhatsApp) para um mês
@@ -11,12 +11,7 @@ export function buildHoursReportText(entries, settings, month) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = monthEntries.reduce((acc, e) => {
-    const c = calcDay(e, settings, acc.total);
-    acc.total += c.overtimeHours;
-    acc.list.push(c);
-    return acc;
-  }, { total: 0, list: [] }).list;
+  const calcs = calcMonthEntries(monthEntries, settings);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otNormalHours = calcs.reduce((a, c) => a + (c.breakdown?.overtimeNormal || 0), 0);

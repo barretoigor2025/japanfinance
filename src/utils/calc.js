@@ -34,7 +34,11 @@ export function getRules(settings) {
   return JAPAN_RULES;
 }
 
-function calcNightMinutes(startMin, endMin, rules) {
+// breakStartMin/breakMins são opcionais: quando informados, excluem do
+// noturno a parte do intervalo que cai dentro da janela de 22h–5h — sem
+// isso, minutos de intervalo (não trabalhados) dentro da madrugada eram
+// contados como se fossem hora noturna paga.
+function calcNightMinutes(startMin, endMin, rules, breakStartMin, breakMins) {
   const nightStart = (rules.nightStart || 22) * 60;
   const nightEnd = (rules.nightEnd || 5) * 60;
   const dayLen = 24 * 60;
@@ -47,19 +51,38 @@ function calcNightMinutes(startMin, endMin, rules) {
     [dayLen, dayLen + nightEnd],
   ];
 
-  let nightMins = 0;
   const shiftLen = endMin > startMin ? endMin - startMin : endMin + dayLen - startMin;
   const normEnd = endMin > startMin ? endMin : endMin + dayLen;
 
-  for (const [ws, we] of windows) {
-    const oStart = Math.max(startMin, ws);
-    const oEnd = Math.min(normEnd, we);
-    if (oEnd > oStart) nightMins += oEnd - oStart;
+  function windowOverlap(oStartBase, oEndBase) {
+    let mins = 0;
+    for (const [ws, we] of windows) {
+      const oStart = Math.max(oStartBase, ws);
+      const oEnd = Math.min(oEndBase, we);
+      if (oEnd > oStart) mins += oEnd - oStart;
+    }
+    return mins;
   }
+
+  let nightMins = windowOverlap(startMin, normEnd);
+
+  if (breakStartMin != null && breakMins > 0) {
+    let bStart = breakStartMin;
+    if (bStart < startMin) bStart += dayLen;
+    const bEnd = bStart + breakMins;
+    // Limita o intervalo aos limites do próprio turno — um horário de
+    // intervalo digitado fora do turno (por engano) não deve descontar nada.
+    const clampedStart = Math.max(bStart, startMin);
+    const clampedEnd = Math.min(bEnd, normEnd);
+    if (clampedEnd > clampedStart) {
+      nightMins = Math.max(0, nightMins - windowOverlap(clampedStart, clampedEnd));
+    }
+  }
+
   return Math.min(nightMins, shiftLen);
 }
 
-export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
+export function calcDay(entry, settings, monthlyOvertimeSoFar = 0, overrideSplit = null) {
   const rules = getRules(settings);
   const rate = settings.hourlyRate || 0;
 
@@ -86,7 +109,8 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   const totalMin = Math.max(0, rawDuration - breakMins);
   const totalHours = totalMin / 60;
 
-  const nightMin = calcNightMinutes(startMin, endMin > startMin ? endMin : endMin + 1440, rules);
+  const breakStartMin = entry.breakStart ? parseTime(entry.breakStart) : null;
+  const nightMin = calcNightMinutes(startMin, endMin > startMin ? endMin : endMin + 1440, rules, breakStartMin, breakMins);
   const nightHours = nightMin / 60;
 
   const isHoliday = entry.dayType === "holiday";
@@ -101,7 +125,16 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   if (jpSaturdayIsAllOT) {
     overtimeDailyMin = totalMin;
     normalMin = 0;
-  } else if (!isHoliday) {
+  } else if (isHoliday) {
+    // normalMin/overtimeDailyMin não afetam o pagamento em feriado (pago via
+    // holidayPay abaixo), então não precisam de tratamento especial aqui.
+  } else if (overrideSplit) {
+    // Usado pelo modo de banco de horas semanal (calcMonthEntries): a
+    // divisão normal/extra já foi decidida com base no total da semana,
+    // não no limite diário de 8h.
+    normalMin = overrideSplit.normalMin;
+    overtimeDailyMin = overrideSplit.overtimeDailyMin;
+  } else {
     overtimeDailyMin = Math.max(0, totalMin - dailyLimit);
     normalMin = Math.min(totalMin, dailyLimit);
   }
@@ -167,6 +200,88 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   };
 }
 
+// Faixas do imposto de renda (aproximação simplificada — não é a tabela
+// oficial de retenção na fonte do Japão, que também considera número de
+// dependentes). Cada faixa é aplicada só na fatia que excede o limite
+// anterior, como um imposto progressivo de verdade: quem cai levemente
+// acima de um limite não paga a alíquota maior sobre o valor inteiro.
+const INCOME_TAX_BRACKETS = [
+  { limit: 88000, rate: 0 },
+  { limit: 162500, rate: 0.05 },
+  { limit: 300000, rate: 0.10 },
+  { limit: 500000, rate: 0.20 },
+  { limit: Infinity, rate: 0.23 },
+];
+
+function progressiveIncomeTax(taxable) {
+  let tax = 0;
+  let prevLimit = 0;
+  for (const { limit, rate } of INCOME_TAX_BRACKETS) {
+    if (taxable <= prevLimit) break;
+    tax += (Math.min(taxable, limit) - prevLimit) * rate;
+    prevLimit = limit;
+  }
+  return tax;
+}
+
+function isoWeekStart(dateStr) {
+  const d = new Date(dateStr + "T12:00:00");
+  const day = (d.getDay() + 6) % 7; // Mon=0..Sun=6
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+// Calcula uma lista de lançamentos (tipicamente um mês) de uma vez, na
+// ordem cronológica. Por padrão reproduz calcDay chamado em sequência
+// (limite diário de 8h, igual sempre foi). Quando
+// settings.customRules.otThresholdMode === "weekly", usa em vez disso um
+// banco de horas semanal (limite de weeklyHours por semana, ao invés de
+// dailyHours por dia) — comum em transportadoras/cooperativas de
+// caminhoneiros que usam jornada variável (変形労働時間制). A separação
+// mensal em hora extra normal/alta (limiar de 60h) continua igual nos
+// dois modos.
+export function calcMonthEntries(entries, settings) {
+  const rules = getRules(settings);
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+
+  if (rules.otThresholdMode !== "weekly") {
+    let accOT = 0;
+    return sorted.map(e => {
+      const c = calcDay(e, settings, accOT);
+      accOT += c.overtimeHours;
+      return c;
+    });
+  }
+
+  const weeklyLimit = (rules.weeklyHours || 40) * 60;
+  const weekRunningMin = {};
+
+  const splits = sorted.map(e => {
+    if (e.dayType === "yukyu" || e.dayType === "holiday" || (e.dayType === "saturday" && settings.mode !== "custom")) {
+      return null; // esses casos não usam overrideSplit (ver calcDay)
+    }
+    const startMin = parseTime(e.start);
+    const endMin = parseTime(e.end);
+    const breakMins = parseInt(e.breakMinutes || 0, 10);
+    const rawDuration = endMin > startMin ? endMin - startMin : endMin + 1440 - startMin;
+    const totalMin = Math.max(0, rawDuration - breakMins);
+
+    const week = isoWeekStart(e.date);
+    const before = weekRunningMin[week] || 0;
+    weekRunningMin[week] = before + totalMin;
+
+    const normalMin = Math.max(0, Math.min(totalMin, weeklyLimit - before));
+    return { normalMin, overtimeDailyMin: totalMin - normalMin };
+  });
+
+  let accOT = 0;
+  return sorted.map((e, i) => {
+    const c = calcDay(e, settings, accOT, splits[i]);
+    accOT += c.overtimeHours;
+    return c;
+  });
+}
+
 export function estimateDeductions(grossMonthly, settings) {
   const deductions = [];
 
@@ -190,14 +305,9 @@ export function estimateDeductions(grossMonthly, settings) {
   const socialSecurity = deductions.reduce((a, d) => a + d.amount, 0);
   const taxable = Math.max(0, grossMonthly - socialSecurity);
 
-  let incomeTax = 0;
-  if (taxable > 500000) incomeTax = taxable * 0.23;
-  else if (taxable > 300000) incomeTax = taxable * 0.20;
-  else if (taxable > 162500) incomeTax = taxable * 0.10;
-  else if (taxable > 88000) incomeTax = taxable * 0.05;
-  incomeTax = Math.round(incomeTax);
+  const incomeTax = Math.round(progressiveIncomeTax(taxable));
   if (incomeTax > 0) {
-    deductions.push({ name: "所得税", label: "Shotoku Zei", amount: incomeTax, rate: null });
+    deductions.push({ name: "所得税", label: "Shotoku Zei (est.)", amount: incomeTax, rate: null });
   }
 
   if (settings.municipalTax !== false) {

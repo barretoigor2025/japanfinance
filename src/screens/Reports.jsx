@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, MonthPicker, SectionLabel, Badge } from "../components/ui.jsx";
-import { calcDay, estimateDeductions } from "../utils/calc.js";
+import { calcMonthEntries, estimateDeductions } from "../utils/calc.js";
 import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
 import { buildHoursReportText } from "../utils/hoursReport.js";
 
@@ -17,12 +17,7 @@ function ReportsTab({ entries, settings }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = monthEntries.reduce((acc, e) => {
-    const c = calcDay(e, settings, acc.total);
-    acc.total += c.overtimeHours;
-    acc.list.push(c);
-    return acc;
-  }, { total: 0, list: [] }).list;
+  const calcs = calcMonthEntries(monthEntries, settings);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
@@ -220,8 +215,7 @@ function CompareTab({ entries, settings }) {
 
   const monthlyData = months.map(month => {
     const mEntries = monthMap[month].sort((a, b) => a.date.localeCompare(b.date));
-    let accOT = 0;
-    const calcs = mEntries.map(e => { const c = calcDay(e, settings, accOT); accOT += c.overtimeHours; return c; });
+    const calcs = calcMonthEntries(mEntries, settings);
     const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
     const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
     const grossSalary = calcs.reduce((a, c) => a + c.grossPay, 0);

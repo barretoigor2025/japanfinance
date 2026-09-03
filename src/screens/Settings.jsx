@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Card, Input, Toggle, SectionLabel } from "../components/ui.jsx";
-import { calcDay, estimateDeductions } from "../utils/calc.js";
+import { calcMonthEntries, estimateDeductions } from "../utils/calc.js";
 import { getYukyuEntitlement } from "../utils/yukyu.js";
 import { YEN, fmtDate, currentMonth } from "../utils/fmt.js";
 import { TeateSection } from "../components/TeateSection.jsx";
@@ -19,15 +19,9 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
 
   // Audit calc for selected month
   const { appBruto, appLiquido } = useMemo(() => {
-    const monthEntries = entries.filter(e => e.date.slice(0, 7) === auditMonth).sort((a, b) => a.date.localeCompare(b.date));
+    const monthEntries = entries.filter(e => e.date.slice(0, 7) === auditMonth);
     if (monthEntries.length === 0) return { appBruto: 0, appLiquido: 0 };
-    let accOT = 0;
-    let gross = 0;
-    monthEntries.forEach(e => {
-      const c = calcDay(e, settings, accOT);
-      accOT += c.overtimeHours;
-      gross += c.grossPay;
-    });
+    const gross = calcMonthEntries(monthEntries, settings).reduce((a, c) => a + c.grossPay, 0);
     const teate = (settings.teate || []).filter(t => t.active).reduce((a, t) => a + (t.amount || 0), 0);
     const grossWithTeate = gross + teate;
     const { netPay } = estimateDeductions(grossWithTeate, settings);
@@ -169,6 +163,22 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
         )}
         {form.mode === "custom" && (
           <div className="mt-3 space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Limiar de hora extra</label>
+              <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
+                {[{ v: "daily", label: "Diário (8h/dia)" }, { v: "weekly", label: "Semanal (banco de horas)" }].map(opt => (
+                  <button key={opt.v} onClick={() => setCustom("otThresholdMode", opt.v)} className="flex-1 py-2 text-xs font-medium transition-colors"
+                    style={(form.customRules?.otThresholdMode || "daily") === opt.v
+                      ? { background: "var(--text)", color: "var(--bg)" }
+                      : { background: "var(--bg-elevated)", color: "var(--text-sub)" }
+                    }
+                  >{opt.label}</button>
+                ))}
+              </div>
+              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                Semanal: hora extra só conta a partir de "Horas/semana" no total da semana, em vez de 8h em cada dia — comum em transportadoras/cooperativas com jornada variável (変形労働時間制).
+              </p>
+            </div>
             <div className="grid grid-cols-2 gap-2">
               <Input label="Horas/dia" type="number" value={form.customRules?.dailyHours || 8} onChange={e => setCustom("dailyHours", parseFloat(e.target.value))} />
               <Input label="Horas/semana" type="number" value={form.customRules?.weeklyHours || 40} onChange={e => setCustom("weeklyHours", parseFloat(e.target.value))} />

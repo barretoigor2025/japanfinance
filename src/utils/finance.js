@@ -1,4 +1,4 @@
-import { calcDay, estimateDeductions } from "./calc.js";
+import { calcMonthEntries, estimateDeductions } from "./calc.js";
 
 export function monthLabel(ym) {
   if (!ym) return "";
@@ -18,12 +18,7 @@ export function allMonthsFromData(entries = [], gastos = {}, extras = {}) {
 
 export function sumSalaryMonth(entries = [], settings = {}, month) {
   const monthEntries = entries.filter(e => e?.date?.slice(0, 7) === month).sort((a, b) => a.date.localeCompare(b.date));
-  let accOT = 0;
-  const calcs = monthEntries.map(e => {
-    const c = calcDay(e, settings, accOT);
-    accOT += c.overtimeHours;
-    return c;
-  });
+  const calcs = calcMonthEntries(monthEntries, settings);
   const totalHours = calcs.reduce((s, c) => s + c.totalHours, 0);
   const overtimeHours = calcs.reduce((s, c) => s + c.overtimeHours, 0);
   const grossSalary = calcs.reduce((s, c) => s + c.grossPay, 0);
