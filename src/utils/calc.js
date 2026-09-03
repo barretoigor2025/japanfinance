@@ -82,7 +82,7 @@ function calcNightMinutes(startMin, endMin, rules, breakStartMin, breakMins) {
   return Math.min(nightMins, shiftLen);
 }
 
-export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
+export function calcDay(entry, settings, monthlyOvertimeSoFar = 0, overrideSplit = null) {
   const rules = getRules(settings);
   const rate = settings.hourlyRate || 0;
 
@@ -125,7 +125,16 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   if (jpSaturdayIsAllOT) {
     overtimeDailyMin = totalMin;
     normalMin = 0;
-  } else if (!isHoliday) {
+  } else if (isHoliday) {
+    // normalMin/overtimeDailyMin não afetam o pagamento em feriado (pago via
+    // holidayPay abaixo), então não precisam de tratamento especial aqui.
+  } else if (overrideSplit) {
+    // Usado pelo modo de banco de horas semanal (calcMonthEntries): a
+    // divisão normal/extra já foi decidida com base no total da semana,
+    // não no limite diário de 8h.
+    normalMin = overrideSplit.normalMin;
+    overtimeDailyMin = overrideSplit.overtimeDailyMin;
+  } else {
     overtimeDailyMin = Math.max(0, totalMin - dailyLimit);
     normalMin = Math.min(totalMin, dailyLimit);
   }
@@ -213,6 +222,64 @@ function progressiveIncomeTax(taxable) {
     prevLimit = limit;
   }
   return tax;
+}
+
+function isoWeekStart(dateStr) {
+  const d = new Date(dateStr + "T12:00:00");
+  const day = (d.getDay() + 6) % 7; // Mon=0..Sun=6
+  d.setDate(d.getDate() - day);
+  return d.toISOString().slice(0, 10);
+}
+
+// Calcula uma lista de lançamentos (tipicamente um mês) de uma vez, na
+// ordem cronológica. Por padrão reproduz calcDay chamado em sequência
+// (limite diário de 8h, igual sempre foi). Quando
+// settings.customRules.otThresholdMode === "weekly", usa em vez disso um
+// banco de horas semanal (limite de weeklyHours por semana, ao invés de
+// dailyHours por dia) — comum em transportadoras/cooperativas de
+// caminhoneiros que usam jornada variável (変形労働時間制). A separação
+// mensal em hora extra normal/alta (limiar de 60h) continua igual nos
+// dois modos.
+export function calcMonthEntries(entries, settings) {
+  const rules = getRules(settings);
+  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+
+  if (rules.otThresholdMode !== "weekly") {
+    let accOT = 0;
+    return sorted.map(e => {
+      const c = calcDay(e, settings, accOT);
+      accOT += c.overtimeHours;
+      return c;
+    });
+  }
+
+  const weeklyLimit = (rules.weeklyHours || 40) * 60;
+  const weekRunningMin = {};
+
+  const splits = sorted.map(e => {
+    if (e.dayType === "yukyu" || e.dayType === "holiday" || (e.dayType === "saturday" && settings.mode !== "custom")) {
+      return null; // esses casos não usam overrideSplit (ver calcDay)
+    }
+    const startMin = parseTime(e.start);
+    const endMin = parseTime(e.end);
+    const breakMins = parseInt(e.breakMinutes || 0, 10);
+    const rawDuration = endMin > startMin ? endMin - startMin : endMin + 1440 - startMin;
+    const totalMin = Math.max(0, rawDuration - breakMins);
+
+    const week = isoWeekStart(e.date);
+    const before = weekRunningMin[week] || 0;
+    weekRunningMin[week] = before + totalMin;
+
+    const normalMin = Math.max(0, Math.min(totalMin, weeklyLimit - before));
+    return { normalMin, overtimeDailyMin: totalMin - normalMin };
+  });
+
+  let accOT = 0;
+  return sorted.map((e, i) => {
+    const c = calcDay(e, settings, accOT, splits[i]);
+    accOT += c.overtimeHours;
+    return c;
+  });
 }
 
 export function estimateDeductions(grossMonthly, settings) {

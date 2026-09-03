@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, MonthPicker, Badge, ConfirmBar } from "../components/ui.jsx";
-import { calcDay } from "../utils/calc.js";
+import { calcMonthEntries } from "../utils/calc.js";
 import { YEN, formatMinutes, currentMonth } from "../utils/fmt.js";
 import { buildHoursReportText } from "../utils/hoursReport.js";
 import { EntryForm } from "../components/EntryForm.jsx";
@@ -26,12 +26,10 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  let accOT = 0;
+  const ascEntries = [...monthEntries].sort((a, b) => a.date.localeCompare(b.date));
   const calcsMap = {};
-  [...monthEntries].reverse().forEach(e => {
-    const c = calcDay(e, settings, accOT);
-    accOT += c.overtimeHours;
-    calcsMap[e.id] = c;
+  calcMonthEntries(ascEntries, settings).forEach((c, i) => {
+    calcsMap[ascEntries[i].id] = c;
   });
 
   const dayTypeBadge = {
