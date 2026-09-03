@@ -8,10 +8,10 @@ export const DAY_TYPES = [
   { value: "yukyu",   label: "有給休暇 (Folga Remunerada)" },
 ];
 
-// Regras da empresa real do usuário (cooperativa de caminhoneiros, Aichi-ken),
-// conferidas contra o holerite de julho/2026. Este app é de uso pessoal, uma
-// única pessoa numa única empresa — por isso não há modo "personalizado":
-// as regras abaixo SÃO a empresa.
+// Regras da 藤商事 (cooperativa de caminhoneiros, Aichi-ken), conferidas
+// contra o holerite de julho/2026. Este app é de uso pessoal, uma única
+// pessoa numa única empresa — por isso não há modo "personalizado": as
+// regras abaixo SÃO a empresa.
 const COMPANY_RULES = {
   // dailyHours só é usado como aproximação na pré-visualização de um único
   // lançamento (antes de salvar) e no modal de detalhe — sem o contexto da

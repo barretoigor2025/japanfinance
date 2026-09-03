@@ -127,7 +127,7 @@ function ReportsTab({ entries, settings }) {
           ))}
         </div>
         <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
-          * Valores estimados. Taxas: Aichi-ken, cooperativa de caminhoneiros. Consulte seu holerite real.
+          * Valores estimados. Taxas: 藤商事, Aichi-ken. Consulte seu holerite real.
         </p>
       </Card>
 

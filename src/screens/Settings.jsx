@@ -144,7 +144,7 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
       <Card>
         <SectionLabel>Modo de Cálculo</SectionLabel>
         <div className="rounded-lg p-2.5 text-xs space-y-1" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
-          <div className="font-semibold" style={{ color: "var(--text-sub)" }}>Regras da sua empresa (cooperativa de caminhoneiros, Aichi-ken)</div>
+          <div className="font-semibold" style={{ color: "var(--text-sub)" }}>Regras da 藤商事 (cooperativa de caminhoneiros, Aichi-ken)</div>
           <div>Hora extra: banco de horas semanal (40h/semana), não limite diário de 8h — assim que a empresa paga os turnos de dobra na prática</div>
           <div>HE +25% (até 60h/mês) · +50% (acima de 60h/mês)</div>
           <div>Noturno 22h–05h: +25% · Feriado: +35%</div>
@@ -169,7 +169,7 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
             </div>
           )}
           <div className="rounded-lg p-2.5 text-xs space-y-1" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
-            <div className="font-semibold" style={{ color: "var(--text-sub)" }}>Aichi-ken (cooperativa caminhoneiros)</div>
+            <div className="font-semibold" style={{ color: "var(--text-sub)" }}>藤商事 (Aichi-ken)</div>
             <div>健康保険 10.5% total · 厚生年金 18.3% total · 介護 1.64% (40+)</div>
           </div>
         </div>
