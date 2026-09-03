@@ -27,7 +27,7 @@ const AICHI_RATES = {
   koyouHoken: 0.006,
 };
 
-function getRules(settings) {
+export function getRules(settings) {
   if (settings.mode === "custom" && settings.customRules) {
     return { ...JAPAN_RULES, ...settings.customRules };
   }

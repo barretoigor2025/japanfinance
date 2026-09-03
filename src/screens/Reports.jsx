@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Card, MonthPicker, SectionLabel, Badge } from "../components/ui.jsx";
-import { calcDay, estimateDeductions } from "../utils/calc.js";
+import { calcDay, estimateDeductions, getRules } from "../utils/calc.js";
 import { YEN, formatMinutes, fmtDate, currentMonth } from "../utils/fmt.js";
 
 function ReportsTab({ entries, settings }) {
   const [month, setMonth] = useState(currentMonth);
   const [toast, setToast] = useState("");
+  const rules = getRules(settings);
 
   function showToast(msg) {
     setToast(msg);
@@ -53,9 +54,15 @@ function ReportsTab({ entries, settings }) {
 
     lines.push("*Horas*");
     lines.push(`  Normais: ${normalHours.toFixed(1)}h`);
-    lines.push(`  Extras (até 60h/mês, +25%): ${otNormalHours.toFixed(1)}h`);
-    if (otHighHours > 0) lines.push(`  Extras (acima 60h/mês, +50%): ${otHighHours.toFixed(1)}h`);
-    if (nightHours > 0) lines.push(`  Noturno (22h–5h, +25%): ${nightHours.toFixed(1)}h`);
+    const otThreshold = rules.monthlyOvertimeThreshold || 60;
+    const otRatePct = Math.round((rules.overtimeRate || 0) * 100);
+    const otHighRatePct = Math.round((rules.overtimeHighRate || 0) * 100);
+    const nightRatePct = Math.round((rules.nightRate || 0) * 100);
+    const nightStart = rules.nightStart ?? 22;
+    const nightEnd = rules.nightEnd ?? 5;
+    lines.push(`  Extras (até ${otThreshold}h/mês, +${otRatePct}%): ${otNormalHours.toFixed(1)}h`);
+    if (otHighHours > 0) lines.push(`  Extras (acima ${otThreshold}h/mês, +${otHighRatePct}%): ${otHighHours.toFixed(1)}h`);
+    if (nightHours > 0) lines.push(`  Noturno (${nightStart}h–${nightEnd}h, +${nightRatePct}%): ${nightHours.toFixed(1)}h`);
     lines.push(`  *Total: ${totalHours.toFixed(1)}h*`);
     lines.push("");
 
