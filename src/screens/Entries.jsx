@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Card, MonthPicker, Badge, ConfirmBar } from "../components/ui.jsx";
 import { calcDay } from "../utils/calc.js";
 import { YEN, formatMinutes, currentMonth } from "../utils/fmt.js";
+import { buildHoursReportText } from "../utils/hoursReport.js";
 import { EntryForm } from "../components/EntryForm.jsx";
 import { CalcDetailModal } from "../components/CalcDetailModal.jsx";
 
@@ -11,6 +12,15 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
   const [editEntry, setEditEntry] = useState(null);
   const [detailEntry, setDetailEntry] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
+  const [toast, setToast] = useState("");
+
+  function copyHoursReport() {
+    const text = buildHoursReportText(entries, settings, month);
+    navigator.clipboard.writeText(text).then(() => {
+      setToast("✓ Copiado!");
+      setTimeout(() => setToast(""), 2200);
+    });
+  }
 
   const monthEntries = entries
     .filter(e => e.date.slice(0, 7) === month)
@@ -45,7 +55,17 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
         >+ Lançar</button>
       </div>
 
-      <MonthPicker value={month} onChange={setMonth} />
+      <div className="flex items-center gap-2">
+        <div className="flex-1"><MonthPicker value={month} onChange={setMonth} /></div>
+        <button
+          onClick={copyHoursReport}
+          className="w-9 h-9 flex items-center justify-center rounded-lg text-base"
+          style={{ background: "var(--bg-elevated)", color: "var(--text-sub)", border: "1px solid var(--border)" }}
+          title="Copiar relatório de horas do mês (WhatsApp)"
+        >
+          📋
+        </button>
+      </div>
 
       {monthEntries.length === 0 ? (
         <Card>
@@ -128,6 +148,15 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
       )}
       {detailEntry && (
         <CalcDetailModal entry={detailEntry} settings={settings} onClose={() => setDetailEntry(null)} />
+      )}
+
+      {toast && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl text-sm font-semibold z-50 pointer-events-none"
+          style={{ background: "var(--positive)", color: "#fff", boxShadow: "0 4px 24px rgba(0,0,0,0.3)" }}
+        >
+          {toast}
+        </div>
       )}
     </div>
   );
