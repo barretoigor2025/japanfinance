@@ -103,6 +103,20 @@ export function EntryForm({ initial, settings, onSave, onClose, entries = [] }) 
                 <span className="text-xs" style={{ color: "var(--text-muted)" }}>min</span>
               </div>
             </div>
+
+            {Number(form.breakMinutes) > 0 && (
+              <div className="space-y-1">
+                <Input
+                  label="Início do intervalo (opcional)"
+                  type="time"
+                  value={form.breakStart || ""}
+                  onChange={e => set("breakStart", e.target.value)}
+                />
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+                  Só importa em turnos que passam pela madrugada (22h–5h): sem isso, o intervalo dentro desse horário é contado como se fosse hora noturna trabalhada.
+                </p>
+              </div>
+            )}
           </>
         )}
 

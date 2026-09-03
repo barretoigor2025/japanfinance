@@ -34,7 +34,11 @@ export function getRules(settings) {
   return JAPAN_RULES;
 }
 
-function calcNightMinutes(startMin, endMin, rules) {
+// breakStartMin/breakMins são opcionais: quando informados, excluem do
+// noturno a parte do intervalo que cai dentro da janela de 22h–5h — sem
+// isso, minutos de intervalo (não trabalhados) dentro da madrugada eram
+// contados como se fossem hora noturna paga.
+function calcNightMinutes(startMin, endMin, rules, breakStartMin, breakMins) {
   const nightStart = (rules.nightStart || 22) * 60;
   const nightEnd = (rules.nightEnd || 5) * 60;
   const dayLen = 24 * 60;
@@ -47,15 +51,28 @@ function calcNightMinutes(startMin, endMin, rules) {
     [dayLen, dayLen + nightEnd],
   ];
 
-  let nightMins = 0;
   const shiftLen = endMin > startMin ? endMin - startMin : endMin + dayLen - startMin;
   const normEnd = endMin > startMin ? endMin : endMin + dayLen;
 
-  for (const [ws, we] of windows) {
-    const oStart = Math.max(startMin, ws);
-    const oEnd = Math.min(normEnd, we);
-    if (oEnd > oStart) nightMins += oEnd - oStart;
+  function windowOverlap(oStartBase, oEndBase) {
+    let mins = 0;
+    for (const [ws, we] of windows) {
+      const oStart = Math.max(oStartBase, ws);
+      const oEnd = Math.min(oEndBase, we);
+      if (oEnd > oStart) mins += oEnd - oStart;
+    }
+    return mins;
   }
+
+  let nightMins = windowOverlap(startMin, normEnd);
+
+  if (breakStartMin != null && breakMins > 0) {
+    let bStart = breakStartMin;
+    if (bStart < startMin) bStart += dayLen;
+    const bEnd = bStart + breakMins;
+    nightMins = Math.max(0, nightMins - windowOverlap(bStart, bEnd));
+  }
+
   return Math.min(nightMins, shiftLen);
 }
 
@@ -86,7 +103,8 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   const totalMin = Math.max(0, rawDuration - breakMins);
   const totalHours = totalMin / 60;
 
-  const nightMin = calcNightMinutes(startMin, endMin > startMin ? endMin : endMin + 1440, rules);
+  const breakStartMin = entry.breakStart ? parseTime(entry.breakStart) : null;
+  const nightMin = calcNightMinutes(startMin, endMin > startMin ? endMin : endMin + 1440, rules, breakStartMin, breakMins);
   const nightHours = nightMin / 60;
 
   const isHoliday = entry.dayType === "holiday";
