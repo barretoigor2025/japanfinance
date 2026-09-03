@@ -35,7 +35,7 @@ export function TeateSection({ teate = [], onChange }) {
             <input
               value={t.label}
               onChange={e => update(t.id, "label", e.target.value)}
-              className="flex-1 bg-transparent text-sm font-medium focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent text-sm font-medium focus:outline-none"
               style={{ color: "var(--text)" }}
               placeholder="Nome do benefício"
             />
@@ -45,7 +45,7 @@ export function TeateSection({ teate = [], onChange }) {
             <input
               value={t.name}
               onChange={e => update(t.id, "name", e.target.value)}
-              className="flex-1 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
+              className="flex-1 min-w-0 rounded-lg px-2 py-1.5 text-xs focus:outline-none"
               style={{ background: "var(--bg-card)", border: "1px solid var(--border-mid)", color: "var(--text-muted)" }}
               placeholder="Nome japonês (opcional)"
             />
