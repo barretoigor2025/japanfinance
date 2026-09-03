@@ -167,6 +167,30 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0) {
   };
 }
 
+// Faixas do imposto de renda (aproximação simplificada — não é a tabela
+// oficial de retenção na fonte do Japão, que também considera número de
+// dependentes). Cada faixa é aplicada só na fatia que excede o limite
+// anterior, como um imposto progressivo de verdade: quem cai levemente
+// acima de um limite não paga a alíquota maior sobre o valor inteiro.
+const INCOME_TAX_BRACKETS = [
+  { limit: 88000, rate: 0 },
+  { limit: 162500, rate: 0.05 },
+  { limit: 300000, rate: 0.10 },
+  { limit: 500000, rate: 0.20 },
+  { limit: Infinity, rate: 0.23 },
+];
+
+function progressiveIncomeTax(taxable) {
+  let tax = 0;
+  let prevLimit = 0;
+  for (const { limit, rate } of INCOME_TAX_BRACKETS) {
+    if (taxable <= prevLimit) break;
+    tax += (Math.min(taxable, limit) - prevLimit) * rate;
+    prevLimit = limit;
+  }
+  return tax;
+}
+
 export function estimateDeductions(grossMonthly, settings) {
   const deductions = [];
 
@@ -190,14 +214,9 @@ export function estimateDeductions(grossMonthly, settings) {
   const socialSecurity = deductions.reduce((a, d) => a + d.amount, 0);
   const taxable = Math.max(0, grossMonthly - socialSecurity);
 
-  let incomeTax = 0;
-  if (taxable > 500000) incomeTax = taxable * 0.23;
-  else if (taxable > 300000) incomeTax = taxable * 0.20;
-  else if (taxable > 162500) incomeTax = taxable * 0.10;
-  else if (taxable > 88000) incomeTax = taxable * 0.05;
-  incomeTax = Math.round(incomeTax);
+  const incomeTax = Math.round(progressiveIncomeTax(taxable));
   if (incomeTax > 0) {
-    deductions.push({ name: "所得税", label: "Shotoku Zei", amount: incomeTax, rate: null });
+    deductions.push({ name: "所得税", label: "Shotoku Zei (est.)", amount: incomeTax, rate: null });
   }
 
   if (settings.municipalTax !== false) {
