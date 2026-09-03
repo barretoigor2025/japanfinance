@@ -70,7 +70,13 @@ function calcNightMinutes(startMin, endMin, rules, breakStartMin, breakMins) {
     let bStart = breakStartMin;
     if (bStart < startMin) bStart += dayLen;
     const bEnd = bStart + breakMins;
-    nightMins = Math.max(0, nightMins - windowOverlap(bStart, bEnd));
+    // Limita o intervalo aos limites do próprio turno — um horário de
+    // intervalo digitado fora do turno (por engano) não deve descontar nada.
+    const clampedStart = Math.max(bStart, startMin);
+    const clampedEnd = Math.min(bEnd, normEnd);
+    if (clampedEnd > clampedStart) {
+      nightMins = Math.max(0, nightMins - windowOverlap(clampedStart, clampedEnd));
+    }
   }
 
   return Math.min(nightMins, shiftLen);
