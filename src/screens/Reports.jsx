@@ -17,7 +17,7 @@ function ReportsTab({ entries, settings }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = calcMonthEntries(monthEntries, settings);
+  const calcs = calcMonthEntries(entries, settings, month);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
@@ -127,7 +127,7 @@ function ReportsTab({ entries, settings }) {
           ))}
         </div>
         <p className="text-xs mt-3" style={{ color: "var(--text-muted)" }}>
-          * Valores estimados. Taxas: Aichi-ken, cooperativa de caminhoneiros. Consulte seu holerite real.
+          * Valores estimados. Taxas: 藤商事, Aichi-ken. Consulte seu holerite real.
         </p>
       </Card>
 
@@ -215,7 +215,7 @@ function CompareTab({ entries, settings }) {
 
   const monthlyData = months.map(month => {
     const mEntries = monthMap[month].sort((a, b) => a.date.localeCompare(b.date));
-    const calcs = calcMonthEntries(mEntries, settings);
+    const calcs = calcMonthEntries(entries, settings, month);
     const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
     const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
     const grossSalary = calcs.reduce((a, c) => a + c.grossPay, 0);

@@ -13,7 +13,6 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
   const [saved, setSaved] = useState(false);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
-  const setCustom = (k, v) => setForm(f => ({ ...f, customRules: { ...f.customRules, [k]: v } }));
 
   const entitlement = getYukyuEntitlement(form.hireDate);
 
@@ -21,7 +20,7 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
   const { appBruto, appLiquido } = useMemo(() => {
     const monthEntries = entries.filter(e => e.date.slice(0, 7) === auditMonth);
     if (monthEntries.length === 0) return { appBruto: 0, appLiquido: 0 };
-    const gross = calcMonthEntries(monthEntries, settings).reduce((a, c) => a + c.grossPay, 0);
+    const gross = calcMonthEntries(entries, settings, auditMonth).reduce((a, c) => a + c.grossPay, 0);
     const teate = (settings.teate || []).filter(t => t.active).reduce((a, t) => a + (t.amount || 0), 0);
     const grossWithTeate = gross + teate;
     const { netPay } = estimateDeductions(grossWithTeate, settings);
@@ -141,54 +140,19 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
         </Card>
       )}
 
-      {/* Calc mode */}
+      {/* Calc mode — fixo, conferido contra o holerite real da empresa */}
       <Card>
         <SectionLabel>Modo de Cálculo</SectionLabel>
-        <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
-          {[{ v: "japan", label: "🇯🇵 Padrão Japão" }, { v: "custom", label: "⚙️ Personalizado" }].map(opt => (
-            <button key={opt.v} onClick={() => set("mode", opt.v)} className="flex-1 py-2 text-sm font-medium transition-colors"
-              style={form.mode === opt.v
-                ? { background: "var(--text)", color: "var(--bg)" }
-                : { background: "var(--bg-elevated)", color: "var(--text-sub)" }
-              }
-            >{opt.label}</button>
-          ))}
+        <div className="rounded-lg p-2.5 text-xs space-y-1" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
+          <div className="font-semibold" style={{ color: "var(--text-sub)" }}>Regras da 藤商事 (cooperativa de caminhoneiros, Aichi-ken)</div>
+          <div>Hora extra: banco de horas semanal (40h/semana), não limite diário de 8h — assim que a empresa paga os turnos de dobra na prática</div>
+          <div>HE +25% (até 60h/mês) · +50% (acima de 60h/mês)</div>
+          <div>Noturno 22h–05h: +25% · Feriado: +35%</div>
+          <div>Sábado (LSA Art.37): todas as horas como HE</div>
         </div>
-        {form.mode === "japan" && (
-          <div className="mt-3 rounded-lg p-2.5 text-xs space-y-1" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
-            <div>8h/dia · 40h/semana · HE +25% (60h+: +50%)</div>
-            <div>Noturno 22h–05h: +25% · Feriado: +35%</div>
-            <div>Sábado (LSA Art.37): todas horas como HE</div>
-          </div>
-        )}
-        {form.mode === "custom" && (
-          <div className="mt-3 space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium uppercase tracking-wide" style={{ color: "var(--text-muted)" }}>Limiar de hora extra</label>
-              <div className="flex rounded-xl overflow-hidden border" style={{ borderColor: "var(--border)" }}>
-                {[{ v: "daily", label: "Diário (8h/dia)" }, { v: "weekly", label: "Semanal (banco de horas)" }].map(opt => (
-                  <button key={opt.v} onClick={() => setCustom("otThresholdMode", opt.v)} className="flex-1 py-2 text-xs font-medium transition-colors"
-                    style={(form.customRules?.otThresholdMode || "daily") === opt.v
-                      ? { background: "var(--text)", color: "var(--bg)" }
-                      : { background: "var(--bg-elevated)", color: "var(--text-sub)" }
-                    }
-                  >{opt.label}</button>
-                ))}
-              </div>
-              <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                Semanal: hora extra só conta a partir de "Horas/semana" no total da semana, em vez de 8h em cada dia — comum em transportadoras/cooperativas com jornada variável (変形労働時間制).
-              </p>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <Input label="Horas/dia" type="number" value={form.customRules?.dailyHours || 8} onChange={e => setCustom("dailyHours", parseFloat(e.target.value))} />
-              <Input label="Horas/semana" type="number" value={form.customRules?.weeklyHours || 40} onChange={e => setCustom("weeklyHours", parseFloat(e.target.value))} />
-              <Input label="HE % (normal)" type="number" step="5" value={(form.customRules?.overtimeRate || 0.25) * 100} onChange={e => setCustom("overtimeRate", parseFloat(e.target.value) / 100)} />
-              <Input label="HE % (60h+)" type="number" step="5" value={(form.customRules?.overtimeHighRate || 0.50) * 100} onChange={e => setCustom("overtimeHighRate", parseFloat(e.target.value) / 100)} />
-              <Input label="Sábado %" type="number" step="5" value={(form.customRules?.saturdayRate || 0) * 100} onChange={e => setCustom("saturdayRate", parseFloat(e.target.value) / 100)} />
-              <Input label="Domingo %" type="number" step="5" value={(form.customRules?.sundayRate || 0) * 100} onChange={e => setCustom("sundayRate", parseFloat(e.target.value) / 100)} />
-            </div>
-          </div>
-        )}
+        <p className="mt-2 text-xs" style={{ color: "var(--text-muted)" }}>
+          Conferido contra o holerite real de julho/2026. Como este app é de uso pessoal — uma pessoa, uma empresa — essas regras não são configuráveis; se a empresa mudar a forma de pagamento, é só pedir pra eu atualizar aqui.
+        </p>
       </Card>
 
       {/* Deductions */}
@@ -205,7 +169,7 @@ export function Settings({ settings, setSettings, entries, auditHistory, setAudi
             </div>
           )}
           <div className="rounded-lg p-2.5 text-xs space-y-1" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)" }}>
-            <div className="font-semibold" style={{ color: "var(--text-sub)" }}>Aichi-ken (cooperativa caminhoneiros)</div>
+            <div className="font-semibold" style={{ color: "var(--text-sub)" }}>藤商事 (Aichi-ken)</div>
             <div>健康保険 10.5% total · 厚生年金 18.3% total · 介護 1.64% (40+)</div>
           </div>
         </div>

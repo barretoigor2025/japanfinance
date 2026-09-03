@@ -8,7 +8,15 @@ export const DAY_TYPES = [
   { value: "yukyu",   label: "有給休暇 (Folga Remunerada)" },
 ];
 
-const JAPAN_RULES = {
+// Regras da 藤商事 (cooperativa de caminhoneiros, Aichi-ken), conferidas
+// contra o holerite de julho/2026. Este app é de uso pessoal, uma única
+// pessoa numa única empresa — por isso não há modo "personalizado": as
+// regras abaixo SÃO a empresa.
+const COMPANY_RULES = {
+  // dailyHours só é usado como aproximação na pré-visualização de um único
+  // lançamento (antes de salvar) e no modal de detalhe — sem o contexto da
+  // semana inteira, calcDay cai de volta pro limite diário. O cálculo do
+  // mês inteiro (calcMonthEntries) sempre usa o banco de horas semanal.
   dailyHours: 8,
   weeklyHours: 40,
   overtimeRate: 0.25,
@@ -27,11 +35,8 @@ const AICHI_RATES = {
   koyouHoken: 0.006,
 };
 
-export function getRules(settings) {
-  if (settings.mode === "custom" && settings.customRules) {
-    return { ...JAPAN_RULES, ...settings.customRules };
-  }
-  return JAPAN_RULES;
+export function getRules() {
+  return COMPANY_RULES;
 }
 
 // breakStartMin/breakMins são opcionais: quando informados, excluem do
@@ -116,7 +121,7 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0, overrideSplit
   const isHoliday = entry.dayType === "holiday";
   const isSaturday = entry.dayType === "saturday";
   const isSunday = entry.dayType === "sunday";
-  const jpSaturdayIsAllOT = isSaturday && settings.mode !== "custom";
+  const jpSaturdayIsAllOT = isSaturday;
 
   const dailyLimit = (rules.dailyHours || 8) * 60;
   let overtimeDailyMin = 0;
@@ -167,13 +172,6 @@ export function calcDay(entry, settings, monthlyOvertimeSoFar = 0, overrideSplit
   }
 
   nightPay = nightHours * rate * rules.nightRate;
-
-  if (isSunday && settings.mode === "custom" && rules.sundayRate) {
-    satSunPay = totalHours * rate * rules.sundayRate;
-  }
-  if (isSaturday && settings.mode === "custom" && rules.saturdayRate && !jpSaturdayIsAllOT) {
-    satSunPay = totalHours * rate * rules.saturdayRate;
-  }
 
   const grossPay = normalPay + overtimePay + nightPay + holidayPay + satSunPay;
 
@@ -231,33 +229,32 @@ function isoWeekStart(dateStr) {
   return d.toISOString().slice(0, 10);
 }
 
-// Calcula uma lista de lançamentos (tipicamente um mês) de uma vez, na
-// ordem cronológica. Por padrão reproduz calcDay chamado em sequência
-// (limite diário de 8h, igual sempre foi). Quando
-// settings.customRules.otThresholdMode === "weekly", usa em vez disso um
-// banco de horas semanal (limite de weeklyHours por semana, ao invés de
-// dailyHours por dia) — comum em transportadoras/cooperativas de
-// caminhoneiros que usam jornada variável (変形労働時間制). A separação
-// mensal em hora extra normal/alta (limiar de 60h) continua igual nos
-// dois modos.
-export function calcMonthEntries(entries, settings) {
+// Calcula os lançamentos de um mês usando banco de horas semanal (limite
+// de weeklyHours por semana, ao invés de dailyHours por dia) — é assim
+// que a empresa (cooperativa de caminhoneiros com jornada variável,
+// 変形労働時間制) paga os turnos longos de "dobra" na prática, conferido
+// contra o holerite real. A separação mensal em hora extra normal/alta
+// (limiar de 60h) continua igual.
+//
+// Recebe TODOS os lançamentos (não só os do mês): quando o mês começa no
+// meio de uma semana ISO, os dias já trabalhados no fim do mês anterior
+// contam pra semana compartilhada, senão a semana "reinicia" zerada e a
+// hora extra dos primeiros dias do mês fica subestimada. Só os
+// lançamentos do mês pedido entram no resultado.
+export function calcMonthEntries(allEntries, settings, month) {
   const rules = getRules(settings);
-  const sorted = [...entries].sort((a, b) => a.date.localeCompare(b.date));
+  const sorted = [...allEntries].sort((a, b) => a.date.localeCompare(b.date));
 
-  if (rules.otThresholdMode !== "weekly") {
-    let accOT = 0;
-    return sorted.map(e => {
-      const c = calcDay(e, settings, accOT);
-      accOT += c.overtimeHours;
-      return c;
-    });
-  }
+  const weekCtxStart = isoWeekStart(`${month}-01`);
+  const [y, m] = month.split("-").map(Number);
+  const monthEnd = new Date(y, m, 0).toISOString().slice(0, 10);
+  const windowEntries = sorted.filter(e => e.date >= weekCtxStart && e.date <= monthEnd);
 
   const weeklyLimit = (rules.weeklyHours || 40) * 60;
   const weekRunningMin = {};
 
-  const splits = sorted.map(e => {
-    if (e.dayType === "yukyu" || e.dayType === "holiday" || (e.dayType === "saturday" && settings.mode !== "custom")) {
+  const splits = windowEntries.map(e => {
+    if (e.dayType === "yukyu" || e.dayType === "holiday" || e.dayType === "saturday") {
       return null; // esses casos não usam overrideSplit (ver calcDay)
     }
     const startMin = parseTime(e.start);
@@ -275,11 +272,14 @@ export function calcMonthEntries(entries, settings) {
   });
 
   let accOT = 0;
-  return sorted.map((e, i) => {
+  const results = [];
+  windowEntries.forEach((e, i) => {
+    if (e.date.slice(0, 7) !== month) return; // contexto da semana anterior, fora do resultado
     const c = calcDay(e, settings, accOT, splits[i]);
     accOT += c.overtimeHours;
-    return c;
+    results.push(c);
   });
+  return results;
 }
 
 export function estimateDeductions(grossMonthly, settings) {
@@ -334,7 +334,6 @@ export const defaultSettings = {
   age: 30,
   prefecture: "",
   hireDate: "",
-  mode: "japan",
   healthInsurance: true,
   pension: true,
   employmentInsurance: true,
@@ -346,13 +345,6 @@ export const defaultSettings = {
     { id: "t3", name: "住宅手当②", label: "Moradia 2", amount: 10000, taxable: true, active: true },
     { id: "t4", name: "その他手当", label: "Outros", amount: 0, taxable: true, active: false },
   ],
-  customRules: {
-    dailyHours: 8, weeklyHours: 40,
-    overtimeRate: 0.25, overtimeHighRate: 0.50,
-    monthlyOvertimeThreshold: 60,
-    nightStart: 22, nightEnd: 5, nightRate: 0.25,
-    holidayRate: 0.35, saturdayRate: 0, sundayRate: 0,
-  },
 };
 
 export const defaultGastos = {

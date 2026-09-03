@@ -28,7 +28,7 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
 
   const ascEntries = [...monthEntries].sort((a, b) => a.date.localeCompare(b.date));
   const calcsMap = {};
-  calcMonthEntries(ascEntries, settings).forEach((c, i) => {
+  calcMonthEntries(entries, settings, month).forEach((c, i) => {
     calcsMap[ascEntries[i].id] = c;
   });
 

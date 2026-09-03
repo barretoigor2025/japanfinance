@@ -11,7 +11,7 @@ export function buildHoursReportText(entries, settings, month) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = calcMonthEntries(monthEntries, settings);
+  const calcs = calcMonthEntries(entries, settings, month);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otNormalHours = calcs.reduce((a, c) => a + (c.breakdown?.overtimeNormal || 0), 0);
