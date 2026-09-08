@@ -349,6 +349,7 @@
           ou número de documento.
         </div>
         <button class="btn btn-primary" onclick="App.start()">Iniciar questionário →</button>
+        <button class="btn btn-ghost" onclick="App.showForms()" style="margin-top:8px;">📥 Só baixar os formulários (sem questionário)</button>
       </div>
 
       <div class="card">
@@ -398,6 +399,13 @@
     <!-- TELA 3 — RESULTADO                                             -->
     <!-- ============================================================= -->
     <section id="screen-result" class="hide">
+      <!-- preenchido por JS -->
+    </section>
+
+    <!-- ============================================================= -->
+    <!-- TELA 4 — SÓ FORMULÁRIOS (sem questionário)                     -->
+    <!-- ============================================================= -->
+    <section id="screen-forms" class="hide">
       <!-- preenchido por JS -->
     </section>
 
@@ -881,15 +889,85 @@
           name: "Lista de familiares",
           jp: "親族一覧表",
           where: "isa", years: "1 via",
-          note: "Relação de parentes (no Japão e no exterior).",
+          note: "Relação de parentes (no Japão e no exterior). Exigido oficialmente só para cônjuge de japonês/residente permanente (não para filho(a)/実子).",
+          catOnly: ["spouse_jp", "spouse_pr"],
           dl: [ { label: "PDF", url: ISA + "001427085.pdf" } ]
         },
         {
-          name: "Folha de autoverificação / checklist",
-          jp: "セルフチェックシート",
+          name: "Folha de autoavaliação — cônjuge/filho(a)",
+          jp: "永住許可申請セルフチェックシート（「日本人の配偶者等」、「永住者の配偶者等」用）",
           where: "isa", years: "—",
-          note: "Checklist oficial para conferir se não falta nada antes de protocolar.",
+          note: "Checklist oficial de autoavaliação dos requisitos, específico para cônjuge/filho(a) de japonês ou residente permanente. Se alguma resposta der \"não\", a chance de indeferimento é alta.",
+          catOnly: ["spouse_jp", "spouse_pr", "child_jp", "child_pr"],
           dl: [ { label: "Excel", url: ISA + "001428358.xlsx" } ]
+        },
+        {
+          name: "Folha de autoavaliação — visto de trabalho",
+          jp: "永住許可申請セルフチェックシート（就労資格用）",
+          where: "isa", years: "—",
+          note: "Checklist oficial de autoavaliação dos requisitos, versão para quem está em status de trabalho (inclui Highly Skilled Professional). Preencha antes de protocolar.",
+          catOnly: ["work", "long_term", "other", "hsp70", "hsp80"],
+          dl: [ { label: "Excel", url: ISA + "001428363.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート",
+          where: "isa", years: "—",
+          note: "Lista oficial (por categoria) de tudo que deve ser entregue junto — confira antes de protocolar.",
+          catOnly: ["spouse_jp"],
+          dl: [ { label: "Excel (日本人の配偶者)", url: ISA + "001422063.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート",
+          where: "isa", years: "—",
+          note: "Lista oficial (por categoria) de tudo que deve ser entregue junto — confira antes de protocolar.",
+          catOnly: ["child_jp"],
+          dl: [ { label: "Excel (日本人の実子)", url: ISA + "001422064.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート",
+          where: "isa", years: "—",
+          note: "Lista oficial (por categoria) de tudo que deve ser entregue junto — confira antes de protocolar.",
+          catOnly: ["spouse_pr"],
+          dl: [ { label: "Excel (永住者の配偶者)", url: ISA + "001422065.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート",
+          where: "isa", years: "—",
+          note: "Lista oficial (por categoria) de tudo que deve ser entregue junto — confira antes de protocolar.",
+          catOnly: ["child_pr"],
+          dl: [ { label: "Excel (永住者の実子)", url: ISA + "001422066.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート（80点）",
+          where: "isa", years: "—",
+          note: "Versão do checklist para quem pede pela via rápida de 80+ pontos (1 ano de residência).",
+          catOnly: ["hsp80"],
+          dl: [ { label: "Excel", url: ISA + "001422072.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート（70点）",
+          where: "isa", years: "—",
+          note: "Versão do checklist para quem pede pela via rápida de 70+ pontos (3 anos de residência).",
+          catOnly: ["hsp70"],
+          dl: [ { label: "Excel", url: ISA + "001422078.xlsx" } ]
+        },
+        {
+          name: "Tabela de pontuação — Highly Skilled Professional",
+          jp: "高度専門職ポイント計算表",
+          where: "self", years: "atual + de 1/3 anos atrás",
+          note: "Você mesmo preenche e soma seus pontos. Para o permanente por via rápida é preciso apresentar a pontuação <b>atual</b> e também a de <b>1 ano atrás</b> (80 pts) ou <b>3 anos atrás</b> (70 pts) — pode reaproximar a tabela vigente na época.",
+          catOnly: ["hsp70", "hsp80"],
+          dl: [
+            { label: "Excel", url: ISA + "930001673.xls" },
+            { label: "PDF", url: ISA + "930001657.pdf", alt: true },
+            { label: "English", url: ISA + "001398882.pdf", alt: true }
+          ]
         },
         {
           name: "Carta de motivos do pedido",
@@ -897,6 +975,13 @@
           where: "self", years: "1 via",
           note: "Texto livre explicando por que você merece o permanente. Não há formulário fixo; escreva e anexe.",
           dl: []
+        },
+        {
+          name: "Pedido de reaproveitamento de documentos",
+          jp: "資料転用願出書",
+          where: "isa", years: "—",
+          note: "Opcional: se você já entregou algum desses documentos num processo anterior à Imigração (ainda válido), pode pedir para reaproveitar em vez de tirar de novo.",
+          dl: [ { label: "Word", url: ISA + "930003313.doc" } ]
         }
       ]
     },
@@ -1483,10 +1568,6 @@
         if (d.jobOnly && !isSelfEmployed) return false;
         return true;
       };
-      const wWhere = (k) => {
-        const m = INSTITUTIONS.find(i => i.k === k) || { icon: "📂", t: k };
-        return `<span class="where ${k}">${m.icon} ${m.t.split(" — ")[0]}</span>`;
-      };
       const docHtml = (d) => {
         const yrs = d.yearsKey === "taxYears" ? taxYears : d.years;
         const dls = (d.dl || []).map(x =>
@@ -1687,8 +1768,64 @@
     goIntro() {
       show("screen-result", false);
       show("screen-quiz", false);
+      show("screen-forms", false);
       show("screen-intro", true);
       window.scrollTo(0, 0);
+    },
+
+    /* tela só de download: lista todo formulário oficial com link de
+       download, sem precisar responder o questionário. Mostra pra qual
+       categoria cada um vale oficialmente, já que fora do questionário
+       não dá pra filtrar pela resposta da pessoa. */
+    showForms() {
+      show("screen-intro", false);
+      show("screen-forms", true);
+      this.renderForms();
+      window.scrollTo(0, 0);
+    },
+
+    renderForms() {
+      const scopeText = (d) => {
+        if (d.catOnly) return `Só para: ${catLabels(d.catOnly)}`;
+        if (d.insuranceOnly || d.jobOnly) return `Depende do seu seguro/tipo de trabalho`;
+        return `Todas as categorias`;
+      };
+      const docHtml = (d) => {
+        const dls = (d.dl || []).map(x =>
+          `<a class="dl ${x.alt ? "alt" : ""}" href="${x.url}" target="_blank" rel="noopener" download>⬇ ${x.label}</a>`
+        ).join("");
+        return `<div class="doc">
+          <div class="doc-top">
+            <div class="doc-name">${d.name}<span class="jp">${d.jp}</span></div>
+          </div>
+          <div class="doc-meta">${wWhere(d.where)}</div>
+          <div class="doc-note" style="color:var(--accent);font-weight:600;">🎯 ${scopeText(d)}</div>
+          ${d.note ? `<div class="doc-note">${d.note}</div>` : ""}
+          <div class="dl-row">${dls}</div>
+        </div>`;
+      };
+      const groupsHtml = DOC_GROUPS.map(g => {
+        const withDl = g.docs.filter(d => d.dl && d.dl.length > 0);
+        if (!withDl.length) return "";
+        return `<div class="doc-group">
+          <div class="doc-group-h">${g.title}</div>
+          <div class="doc-group-sub">${g.sub}</div>
+          ${withDl.map(docHtml).join("")}
+        </div>`;
+      }).join("");
+
+      document.getElementById("screen-forms").innerHTML = `
+        <div class="card fade">
+          <a class="back-link" href="#" onclick="App.goIntro();return false;">← Voltar</a>
+          <div class="sect-title">📥 Baixar formulários oficiais</div>
+          <p class="muted">
+            Todos os formulários oficiais da Imigração usados nesta ferramenta, sem
+            precisar responder o questionário. Cada um mostra para qual categoria de
+            visto ele vale oficialmente — baixe só o que se aplica ao seu caso.
+          </p>
+        </div>
+        ${groupsHtml}
+      `;
     },
 
     /* monta o texto-resumo (estilo WhatsApp) a partir do resultado */
@@ -1754,6 +1891,13 @@
   /* utilidades */
   function show(id, on) { document.getElementById(id).classList.toggle("hide", !on); }
   function stripTags(s) { return String(s).replace(/<[^>]*>/g, ""); }
+  function wWhere(k) {
+    const m = INSTITUTIONS.find(i => i.k === k) || { icon: "📂", t: k };
+    return `<span class="where ${k}">${m.icon} ${m.t.split(" — ")[0]}</span>`;
+  }
+  function catLabels(keys) {
+    return keys.map(k => (CATEGORIES[k] || {}).label || k).join(", ");
+  }
   function hexBg(varColor) {
     const map = {
       "var(--positive)": "rgba(21,128,61,0.07)",
