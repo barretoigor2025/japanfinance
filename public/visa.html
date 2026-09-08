@@ -592,6 +592,17 @@
       ]
     },
     {
+      id: "specialPr", section: "Categoria",
+      text: "Esse familiar japonês é cidadão japonês comum, ou 特別永住者 (residente permanente especial)?",
+      hint: "特別永住者 é um status específico (comum entre descendentes de coreanos/chineses com residência histórica no Japão). O requisito de anos para o visto permanente é o mesmo dos dois casos, mas o formulário oficial de checklist a baixar é diferente.",
+      type: "choice",
+      options: [
+        { v: "jp",        t: "Cidadão japonês comum", s: "日本人" },
+        { v: "specialpr", t: "特別永住者", s: "residente permanente especial" }
+      ],
+      showIf: (a) => ["spouse_jp", "child_jp"].includes(a.category)
+    },
+    {
       id: "isMinor", section: "Categoria",
       text: "Você está aplicando como menor de 18 anos (ou sob responsável legal)?",
       hint: "Para filhos menores de japonês ou residente permanente, os requisitos de renda e conduta são formalmente dispensados — o principal requisito é o tempo de residência.",
@@ -906,8 +917,32 @@
           jp: "永住許可申請セルフチェックシート（就労資格用）",
           where: "isa", years: "—",
           note: "Checklist oficial de autoavaliação dos requisitos, versão para quem está em status de trabalho (inclui Highly Skilled Professional). Preencha antes de protocolar.",
-          catOnly: ["work", "long_term", "other", "hsp70", "hsp80"],
+          catOnly: ["work", "hsp70", "hsp80"],
           dl: [ { label: "Excel", url: ISA + "001428363.xlsx" } ]
+        },
+        {
+          name: "Folha de autoavaliação — Long-Term Resident",
+          jp: "永住許可申請セルフチェックシート（「定住者」用）",
+          where: "isa", years: "—",
+          note: "Checklist oficial de autoavaliação dos requisitos, versão específica para quem tem status de 定住者. Preencha antes de protocolar.",
+          catOnly: ["long_term"],
+          dl: [ { label: "Excel", url: ISA + "001428361.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート（定住者用）",
+          where: "isa", years: "—",
+          note: "Lista oficial de tudo que deve ser entregue por quem tem status de 定住者 — confira antes de protocolar.",
+          catOnly: ["long_term"],
+          dl: [ { label: "Excel", url: ISA + "001422067.xlsx" } ]
+        },
+        {
+          name: "Checklist de documentos a apresentar",
+          jp: "提出書類チェックシート（就労資格）",
+          where: "isa", years: "—",
+          note: "Lista oficial de tudo que deve ser entregue por quem está em visto de trabalho comum (regra geral de 10 anos) — confira antes de protocolar.",
+          catOnly: ["work"],
+          dl: [ { label: "Excel", url: ISA + "001422070.xlsx" } ]
         },
         {
           name: "Checklist de documentos a apresentar",
@@ -1561,9 +1596,20 @@
         : "3 anos";
       const isSelfEmployed = a2.stableJob === "partly" || a2.stableJob === "no";
 
+      // Os formulários de CHECKLIST oficiais agrupam 特別永住者 junto com
+      // 永住者 (não com 日本人) — mesmo o requisito de elegibilidade sendo
+      // idêntico ao de cônjuge/filho(a) de japonês comum. Por isso, pra
+      // escolher qual arquivo baixar, usamos uma categoria "efetiva" que
+      // pode diferir da categoria usada no cálculo de pontuação acima.
+      const isSpecialPr = a2.specialPr === "specialpr";
+      const docCategory =
+        (a2.category === "spouse_jp" && isSpecialPr) ? "spouse_pr"
+        : (a2.category === "child_jp" && isSpecialPr) ? "child_pr"
+        : a2.category;
+
       // decide se um documento aparece, conforme respostas
       const docVisible = (d) => {
-        if (d.catOnly && !d.catOnly.includes(a2.category)) return false;
+        if (d.catOnly && !d.catOnly.includes(docCategory)) return false;
         if (d.insuranceOnly && !d.insuranceOnly.includes(a2.insurance)) return false;
         if (d.jobOnly && !isSelfEmployed) return false;
         return true;
@@ -1773,23 +1819,75 @@
       window.scrollTo(0, 0);
     },
 
-    /* tela só de download: lista todo formulário oficial com link de
-       download, sem precisar responder o questionário. Mostra pra qual
-       categoria cada um vale oficialmente, já que fora do questionário
-       não dá pra filtrar pela resposta da pessoa. */
+    /* tela só de download: primeiro escolhe a categoria (sem passar pelo
+       questionário inteiro), depois mostra só os formulários que valem
+       pra essa categoria — pra imprimir e preencher direto. */
     showForms() {
       show("screen-intro", false);
       show("screen-forms", true);
-      this.renderForms();
+      this.renderFormsCategoryPicker();
       window.scrollTo(0, 0);
     },
 
-    renderForms() {
-      const scopeText = (d) => {
-        if (d.catOnly) return `Só para: ${catLabels(d.catOnly)}`;
-        if (d.insuranceOnly || d.jobOnly) return `Depende do seu seguro/tipo de trabalho`;
-        return `Todas as categorias`;
-      };
+    renderFormsCategoryPicker() {
+      const catQ = QUESTIONS.find(q => q.id === "category");
+      const opts = catQ.options.map(o =>
+        `<button class="opt" onclick="App.pickFormsCategory('${o.v}')">
+          <span class="dot"></span>
+          <span>${o.t}${o.s ? `<small>${o.s}</small>` : ""}</span>
+        </button>`
+      ).join("");
+      document.getElementById("screen-forms").innerHTML = `
+        <div class="card fade">
+          <a class="back-link" href="#" onclick="App.goIntro();return false;">← Voltar</a>
+          <div class="sect-title">📥 Baixar formulários oficiais</div>
+          <p class="muted">Selecione sua categoria pra ver só os formulários que valem pra ela — sem responder o questionário inteiro.</p>
+          <div class="opts" style="margin-top:12px;">${opts}</div>
+        </div>
+      `;
+      window.scrollTo(0, 0);
+    },
+
+    pickFormsCategory(cat) {
+      // 特別永住者 usa formulário de checklist diferente do 日本人 comum,
+      // mesmo com a mesma regra de elegibilidade — pergunta rápida extra
+      // só pra esses dois casos antes de mostrar a lista.
+      if (["spouse_jp", "child_jp"].includes(cat)) {
+        this.renderFormsSpecialPrStep(cat);
+        return;
+      }
+      this.renderFormsList(cat);
+    },
+
+    renderFormsSpecialPrStep(cat) {
+      document.getElementById("screen-forms").innerHTML = `
+        <div class="card fade">
+          <a class="back-link" href="#" onclick="App.renderFormsCategoryPicker();return false;">← Voltar</a>
+          <div class="sect-title">Esse familiar japonês é...</div>
+          <p class="muted">O requisito de anos é igual nos dois casos, mas o checklist oficial pra baixar é diferente.</p>
+          <div class="opts" style="margin-top:12px;">
+            <button class="opt" onclick="App.renderFormsList('${cat}', false)">
+              <span class="dot"></span><span>Cidadão japonês comum<small>日本人</small></span>
+            </button>
+            <button class="opt" onclick="App.renderFormsList('${cat}', true)">
+              <span class="dot"></span><span>特別永住者<small>residente permanente especial</small></span>
+            </button>
+          </div>
+        </div>
+      `;
+      window.scrollTo(0, 0);
+    },
+
+    renderFormsList(cat, isSpecialPr) {
+      // mesma lógica de remapeamento usada em finish(): pro efeito de
+      // qual FORMULÁRIO baixar (não pra pontuação), 特別永住者 segue o
+      // checklist de 永住者, não o de 日本人.
+      const effectiveCat =
+        (cat === "spouse_jp" && isSpecialPr) ? "spouse_pr"
+        : (cat === "child_jp" && isSpecialPr) ? "child_pr"
+        : cat;
+      const catLabel = (CATEGORIES[cat] || {}).label || cat;
+
       const docHtml = (d) => {
         const dls = (d.dl || []).map(x =>
           `<a class="dl ${x.alt ? "alt" : ""}" href="${x.url}" target="_blank" rel="noopener" download>⬇ ${x.label}</a>`
@@ -1799,30 +1897,31 @@
             <div class="doc-name">${d.name}<span class="jp">${d.jp}</span></div>
           </div>
           <div class="doc-meta">${wWhere(d.where)}</div>
-          <div class="doc-note" style="color:var(--accent);font-weight:600;">🎯 ${scopeText(d)}</div>
           ${d.note ? `<div class="doc-note">${d.note}</div>` : ""}
           <div class="dl-row">${dls}</div>
         </div>`;
       };
       const groupsHtml = DOC_GROUPS.map(g => {
-        const withDl = g.docs.filter(d => d.dl && d.dl.length > 0);
-        if (!withDl.length) return "";
+        const visible = g.docs.filter(d =>
+          d.dl && d.dl.length > 0 && (!d.catOnly || d.catOnly.includes(effectiveCat))
+        );
+        if (!visible.length) return "";
         return `<div class="doc-group">
           <div class="doc-group-h">${g.title}</div>
           <div class="doc-group-sub">${g.sub}</div>
-          ${withDl.map(docHtml).join("")}
+          ${visible.map(docHtml).join("")}
         </div>`;
       }).join("");
 
+      const backTarget = ["spouse_jp", "child_jp"].includes(cat)
+        ? `App.renderFormsSpecialPrStep('${cat}')`
+        : `App.renderFormsCategoryPicker()`;
+
       document.getElementById("screen-forms").innerHTML = `
         <div class="card fade">
-          <a class="back-link" href="#" onclick="App.goIntro();return false;">← Voltar</a>
-          <div class="sect-title">📥 Baixar formulários oficiais</div>
-          <p class="muted">
-            Todos os formulários oficiais da Imigração usados nesta ferramenta, sem
-            precisar responder o questionário. Cada um mostra para qual categoria de
-            visto ele vale oficialmente — baixe só o que se aplica ao seu caso.
-          </p>
+          <a class="back-link" href="#" onclick="${backTarget};return false;">← Trocar categoria</a>
+          <div class="sect-title">📥 Formulários — ${catLabel}</div>
+          <p class="muted">Todos os formulários oficiais que se aplicam à sua categoria. Baixe, imprima e preencha antes de protocolar.</p>
         </div>
         ${groupsHtml}
       `;
@@ -1894,9 +1993,6 @@
   function wWhere(k) {
     const m = INSTITUTIONS.find(i => i.k === k) || { icon: "📂", t: k };
     return `<span class="where ${k}">${m.icon} ${m.t.split(" — ")[0]}</span>`;
-  }
-  function catLabels(keys) {
-    return keys.map(k => (CATEGORIES[k] || {}).label || k).join(", ");
   }
   function hexBg(varColor) {
     const map = {
