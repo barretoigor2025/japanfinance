@@ -21,12 +21,19 @@ export function Dashboard({ entries, settings, onAddEntry }) {
   const otHours = calcs.reduce((a, c) => a + c.overtimeHours, 0);
   const otHoursHigh = calcs.reduce((a, c) => a + (c.breakdown?.overtimeHigh || 0), 0);
   const grossSalary = calcs.reduce((a, c) => a + c.grossPay, 0);
-  const totalTeate = (settings.teate || []).filter(t => t.active).reduce((a, t) => a + (t.amount || 0), 0);
-  const grossWithTeate = Math.round(grossSalary + totalTeate);
-  const { netPay, totalDeductions } = estimateDeductions(grossWithTeate, settings);
+  const activeTeate = (settings.teate || []).filter(t => t.active);
+  const totalTeate = activeTeate.reduce((a, t) => a + (t.amount || 0), 0);
+  const taxableTeate = activeTeate.filter(t => t.taxable).reduce((a, t) => a + (t.amount || 0), 0);
+  const nonTaxableTeate = totalTeate - taxableTeate;
+  const { netPay: salaryNetPay, totalDeductions: salaryDeductions } = estimateDeductions(grossSalary, settings);
+  const { totalDeductions: payoutDeductions } = estimateDeductions(grossSalary + taxableTeate, settings);
+  const additionalTeateDeductions = Math.max(0, payoutDeductions - salaryDeductions);
+  const projectedPay = Math.max(0, salaryNetPay + totalTeate - additionalTeateDeductions);
 
   const workedDays = monthEntries.filter(e => e.dayType !== "yukyu").length;
   const yukyuDays = monthEntries.filter(e => e.dayType === "yukyu").length;
+  const grossPerWorkday = workedDays ? Math.round(grossSalary / workedDays) : 0;
+  const netPerWorkday = workedDays ? Math.round(salaryNetPay / workedDays) : 0;
 
   const entitlement = getYukyuEntitlement(settings.hireDate);
   const yukyuUsed = entries.filter(e => e.dayType === "yukyu").length;
@@ -58,13 +65,14 @@ export function Dashboard({ entries, settings, onAddEntry }) {
       <div className="grid grid-cols-2 gap-2">
         <Card>
           <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Bruto</div>
-          <div className="text-lg font-mono font-bold" style={{ color: "var(--positive)" }}>{YEN(grossWithTeate)}</div>
-          {totalTeate > 0 && <div className="text-xs" style={{ color: "var(--text-muted)" }}>+{YEN(totalTeate)} 手当</div>}
+          <div className="text-lg font-mono font-bold" style={{ color: "var(--positive)" }}>{YEN(grossSalary)}</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>Média: {YEN(grossPerWorkday)}/dia trabalhado</div>
         </Card>
         <Card>
           <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Líquido (est.)</div>
-          <div className="text-lg font-mono font-bold" style={{ color: "var(--warning)" }}>{YEN(netPay)}</div>
-          <div className="text-xs" style={{ color: "var(--negative)" }}>-{YEN(totalDeductions)}</div>
+          <div className="text-lg font-mono font-bold" style={{ color: "var(--warning)" }}>{YEN(salaryNetPay)}</div>
+          <div className="text-xs" style={{ color: "var(--negative)" }}>-{YEN(salaryDeductions)} em descontos est.</div>
+          <div className="text-xs" style={{ color: "var(--text-muted)" }}>Média: {YEN(netPerWorkday)}/dia trabalhado</div>
         </Card>
         <Card>
           <div className="text-xs uppercase tracking-widest mb-0.5" style={{ color: "var(--text-muted)" }}>Horas</div>
@@ -78,6 +86,28 @@ export function Dashboard({ entries, settings, onAddEntry }) {
           {otHours > 0 && otHours <= 60 && <div className="text-xs" style={{ color: "var(--text-muted)" }}>{((otHours / 60) * 100).toFixed(0)}% do limite</div>}
         </Card>
       </div>
+
+      {activeTeate.length > 0 && (
+        <Card>
+          <div className="text-xs uppercase tracking-widest mb-2" style={{ color: "var(--text-muted)" }}>手当 — Adicionais separados</div>
+          <div className="space-y-1.5">
+            {activeTeate.map((t, i) => (
+              <div key={t.id || i} className="flex justify-between items-center gap-3">
+                <div>
+                  <span className="text-sm" style={{ color: "var(--text-sub)" }}>{t.label || t.name}</span>
+                  <span className="text-xs ml-1" style={{ color: "var(--text-muted)" }}>{t.taxable ? "tributável" : "não tributável"}</span>
+                </div>
+                <span className="text-sm font-mono" style={{ color: "var(--info)" }}>{YEN(t.amount || 0)}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center border-t pt-1.5" style={{ borderColor: "var(--border)" }}>
+              <span className="text-sm font-semibold" style={{ color: "var(--text)" }}>Total 手当</span>
+              <span className="text-sm font-mono font-bold" style={{ color: "var(--info)" }}>{YEN(totalTeate)}</span>
+            </div>
+          </div>
+          <div className="text-xs mt-2" style={{ color: "var(--text-muted)" }}>Valores conforme cadastrados em Config; a gasolina ainda usa o valor informado lá.</div>
+        </Card>
+      )}
 
       {/* OT bar */}
       {otHours > 0 && (
@@ -179,6 +209,29 @@ export function Dashboard({ entries, settings, onAddEntry }) {
           </div>
         </Card>
       )}
+
+      <Card>
+        <div className="text-xs uppercase tracking-widest mb-1" style={{ color: "var(--text-muted)" }}>Previsão total a receber no mês</div>
+        <div className="text-xl font-mono font-bold mb-2" style={{ color: "var(--positive)" }}>{YEN(projectedPay)}</div>
+        <div className="space-y-1 text-xs">
+          <div className="flex justify-between">
+            <span style={{ color: "var(--text-sub)" }}>Salário líquido estimado</span>
+            <span className="font-mono" style={{ color: "var(--text)" }}>{YEN(salaryNetPay)}</span>
+          </div>
+          {taxableTeate > 0 && <div className="flex justify-between">
+            <span style={{ color: "var(--text-sub)" }}>+ 手当 tributáveis</span>
+            <span className="font-mono" style={{ color: "var(--info)" }}>{YEN(taxableTeate)}</span>
+          </div>}
+          {nonTaxableTeate > 0 && <div className="flex justify-between">
+            <span style={{ color: "var(--text-sub)" }}>+ 手当 não tributáveis</span>
+            <span className="font-mono" style={{ color: "var(--info)" }}>{YEN(nonTaxableTeate)}</span>
+          </div>}
+          {additionalTeateDeductions > 0 && <div className="flex justify-between">
+            <span style={{ color: "var(--text-sub)" }}>− descontos estimados sobre 手当 tributáveis</span>
+            <span className="font-mono" style={{ color: "var(--negative)" }}>-{YEN(additionalTeateDeductions)}</span>
+          </div>}
+        </div>
+      </Card>
 
       {monthEntries.length === 0 && (
         <Card>
