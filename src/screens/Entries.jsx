@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Card, MonthPicker, Badge, ConfirmBar } from "../components/ui.jsx";
-import { calcMonthEntries } from "../utils/calc.js";
+import { calcDay } from "../utils/calc.js";
 import { YEN, formatMinutes, currentMonth } from "../utils/fmt.js";
 import { buildHoursReportText } from "../utils/hoursReport.js";
 import { EntryForm } from "../components/EntryForm.jsx";
@@ -15,7 +15,7 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
   const [toast, setToast] = useState("");
 
   function copyHoursReport() {
-    const text = buildHoursReportText(entries, settings, month);
+    const text = buildHoursReportText(entries, settings, month, { dailyOnly: true });
     navigator.clipboard.writeText(text).then(() => {
       setToast("✓ Copiado!");
       setTimeout(() => setToast(""), 2200);
@@ -26,11 +26,9 @@ export function Entries({ entries, settings, onAddEntry, onDeleteEntry }) {
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => b.date.localeCompare(a.date));
 
-  const ascEntries = [...monthEntries].sort((a, b) => a.date.localeCompare(b.date));
-  const calcsMap = {};
-  calcMonthEntries(entries, settings, month).forEach((c, i) => {
-    calcsMap[ascEntries[i].id] = c;
-  });
+  const calcsMap = Object.fromEntries(
+    monthEntries.map(e => [e.id, calcDay(e, settings)])
+  );
 
   const dayTypeBadge = {
     holiday: { color: "red", label: "Feriado" },
