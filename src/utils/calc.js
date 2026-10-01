@@ -247,7 +247,7 @@ export function calcMonthEntries(allEntries, settings, month) {
 
   const weekCtxStart = isoWeekStart(`${month}-01`);
   const [y, m] = month.split("-").map(Number);
-  const monthEnd = new Date(y, m, 0).toISOString().slice(0, 10);
+  const monthEnd = `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, "0")}`;
   const windowEntries = sorted.filter(e => e.date >= weekCtxStart && e.date <= monthEnd);
 
   const weeklyLimit = (rules.weeklyHours || 40) * 60;
