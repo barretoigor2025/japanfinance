@@ -1,17 +1,17 @@
-import { calcMonthEntries, getRules, estimateDeductions } from "./calc.js";
+import { calcDay, calcMonthEntries, getRules, estimateDeductions } from "./calc.js";
 import { YEN, fmtDate } from "./fmt.js";
 
 // Monta o texto do relatório de horas (estilo WhatsApp) para um mês
 // específico — usado tanto na aba Jornada quanto em Relatórios, sempre
 // com base no mês que está sendo visualizado na tela que chamou.
-export function buildHoursReportText(entries, settings, month) {
+export function buildHoursReportText(entries, settings, month, { dailyOnly = false } = {}) {
   const rules = getRules(settings);
 
   const monthEntries = entries
     .filter(e => e.date.slice(0, 7) === month)
     .sort((a, b) => a.date.localeCompare(b.date));
 
-  const calcs = calcMonthEntries(entries, settings, month);
+  const calcs = dailyOnly ? monthEntries.map(e => calcDay(e, settings)) : calcMonthEntries(entries, settings, month);
 
   const totalHours = calcs.reduce((a, c) => a + c.totalHours, 0);
   const otNormalHours = calcs.reduce((a, c) => a + (c.breakdown?.overtimeNormal || 0), 0);
