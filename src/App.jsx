@@ -88,6 +88,7 @@ export default function App() {
           <span className="text-xs px-1.5 py-0.5 rounded" style={{ background: "var(--bg-elevated)", color: "var(--text-muted)", border: "1px solid var(--border-mid)" }}>v5</span>
         </div>
         <div className="flex items-center gap-2">
+          <a href={import.meta.env.BASE_URL + "calculadora-caminhoneiro.html"} className="px-2 py-1.5 rounded-lg text-xs font-medium" style={{ background: "var(--bg-elevated)", color: "var(--positive)" }} title="Calculadora do caminhoneiro">🚚 Calcular</a>
           <button
             onClick={() => setShowBackup(true)}
             className="relative px-2.5 py-1.5 rounded-lg text-xs font-medium"
