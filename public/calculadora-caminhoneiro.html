@@ -1,9 +1,67 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Comparar propostas · JapanFinance</title><style>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Calculadora do caminhoneiro · JapanFinance</title><style>
 :root{color-scheme:light;--bg:#f6f7f9;--card:#ffffff;--field:#fafbfc;--border:#d6dde5;--text:#172331;--muted:#526273;--green:#157247;--red:#b72943;--blue:#245da6}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:13px/1.45 system-ui,sans-serif}main{max-width:1050px;margin:auto;padding:24px 18px 48px}header,.bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}a{color:var(--blue);text-decoration:none}h1{font-size:28px;letter-spacing:-.8px;margin:25px 0 5px}h2{font-size:17px;margin:0}p{color:var(--muted);margin:6px 0 16px}.small{font-size:11px;color:var(--muted)}button,input,select{font:inherit;color:var(--text);background:var(--field);border:1px solid var(--border);border-radius:8px;padding:9px;width:100%;min-width:0}button{width:auto;cursor:pointer}button:hover{border-color:var(--blue)}button.primary{background:#e5f4ec;border-color:#9bc8b0;color:#155c3c}input:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px}label{display:flex;flex-direction:column;gap:5px;font-size:11px;color:var(--muted)}.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 14px}.toolbar label{flex:1;min-width:170px}.toolbar button{align-self:end}.board{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.company{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px}.company.current{border-top:3px solid var(--blue)}.company.proposal{border-top:3px solid var(--green)}.tag{font-size:10px;font-weight:600;letter-spacing:1px;color:var(--blue);margin-bottom:8px}.proposal .tag{color:var(--green)}.name{font-weight:600;font-size:18px;background:transparent;padding:0 0 10px;border:0;border-radius:0;margin-bottom:12px}.fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.full{grid-column:1/-1}.shift{border-top:1px solid var(--border);padding-top:14px;margin-top:14px}.shiftTitle{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;font-weight:500}.shiftTitle .small{font-weight:400}.out{margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}.caption{font-size:11px;color:var(--muted)}.amount{font-size:clamp(23px,4vw,38px);font-weight:650;letter-spacing:-1px;font-variant-numeric:tabular-nums;margin:3px 0;color:var(--text)}.metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.metric{padding:9px 0}.metric strong{display:block;font-size:16px;font-variant-numeric:tabular-nums}.line{display:flex;justify-content:space-between;gap:8px;padding:6px 0;color:var(--muted)}.line strong{font-weight:500;color:var(--text);text-align:right}.decision{margin-top:14px;padding:12px;border-radius:9px;background:#edf2f7;font-size:12px}.decision strong{display:block;font-size:20px;letter-spacing:-.3px;margin-top:3px}.decision.win{color:var(--green);background:#e7f6ed}.decision.loss{color:var(--red);background:#fff0f2}.decision.equal{color:var(--blue)}details{margin-top:14px}summary{cursor:pointer;color:var(--blue);font-size:12px;padding:6px 0}.advanced{margin-top:10px}.advanced .fields{margin-bottom:12px}.error{color:var(--red);padding:12px 0}.overview{margin-top:22px;border-top:1px solid var(--border);padding-top:18px}.compareRow{display:grid;grid-template-columns:1.3fr 1fr 1fr auto;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--border)}.compareRow strong{font-variant-numeric:tabular-nums}.positive{color:var(--green)}.negative{color:var(--red)}.notes{margin-top:24px;color:var(--muted);font-size:12px}.notes li{margin:7px 0}.save{margin-top:24px;color:var(--muted);font-size:11px}.top-action{font-size:12px}.basis{max-width:290px}.invalid{opacity:.55}[hidden]{display:none!important}@media(max-width:600px){main{padding:18px 10px 36px}h1{font-size:24px}.board{gap:8px}.company{padding:12px 9px;border-radius:12px}.name{font-size:15px}.fields{gap:7px}input,select{padding:8px 5px;font-size:12px}input[type=time]{font-size:11px}.amount{font-size:clamp(20px,6vw,32px)}.metrics{gap:4px}.metric strong{font-size:13px}.shiftTitle{font-size:12px;flex-wrap:wrap;gap:2px}.caption,.small,label{font-size:10px}.decision{padding:9px 7px;font-size:11px}.decision strong{font-size:17px}.line{font-size:11px;flex-wrap:wrap}.compareRow{grid-template-columns:1fr 1fr;gap:5px}.compareRow button{justify-self:end}.basis{max-width:none}.toolbar{margin:14px 0}.toolbar label{min-width:140px}.shift{margin-top:12px;padding-top:12px}}
 @media print{button,.toolbar,details{display:none}body{background:white;color:black}.company{break-inside:avoid}.amount,.line strong{color:black}}
 
 .company{min-width:0}.company>.tag{min-height:16px}.name{width:100%}.unused .fields{visibility:hidden}.unused .shiftTitle{color:var(--muted)}.alignment-gap{display:block}.payment{margin-top:10px}.bin-note{color:var(--muted);font-size:11px;margin:8px 0 0}.effective{color:var(--blue)}.line{align-items:start}.line span{min-width:0}.decision{min-height:80px}.line strong{font-variant-numeric:tabular-nums}.shiftTitle .small{display:none}
+
+.quick { max-width: 460px; margin: 0 auto; }
+.quick h1 { font-size: clamp(22px, 5vw, 26px); margin: 0 0 10px; }
+.quickForm { padding: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; }
+.quickForm .fields { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.quickForm label { gap: 3px; font-size: 12px; }
+.quickForm input, .quickForm select { min-height: 40px; padding: 5px 7px; font-size: 16px; }
+.quickShift { margin: 8px 0 0; padding: 0; border: 0; min-inline-size: 0; }
+.quickShift legend { padding: 0; margin-bottom: 3px; font-weight: 600; }
+.quickResult { margin-top: 10px; padding: 8px 10px; border-radius: 8px; background: #e7f6ed; }
+.quickResult strong { display: block; color: var(--green); font-size: 20px; font-variant-numeric: tabular-nums; }
+.quickResult .error { grid-column: 1 / -1; margin: 0; padding: 0; }
+.quickAssumptions { margin: 5px 0 0; }
+.quickSettings, .quickMore { margin-top: 3px; }
+.quickSettings > .fields { margin-top: 3px; }
+.quickMore:not([open]) { max-width: 460px; margin-inline: auto; }
+.quickMore > summary { font-size: 13px; }
+.quickMore[open] > summary { margin: 8px 0; }
+@media print { .quickMore[open] { display: block; } }
 </style></head><body><main>
+<section class="quick" aria-labelledby="quickTitle">
+  <h1 id="quickTitle">🚚 Calculadora do caminhoneiro</h1>
+  <form class="quickForm" id="quickForm" aria-label="Cálculo de salário por hora">
+    <div class="fields">
+      <label>Salário por hora (¥)<input type="number" name="rate" min="1" max="100000" step="1" inputmode="numeric" required></label>
+      <label>Turno<select name="mode">
+        <option value="night">Yakin · noite</option>
+        <option value="day">Hirukin · dia</option>
+        <option value="both">Nikotai · alternado</option>
+      </select></label>
+    </div>
+    <fieldset class="quickShift" data-quick-shift="day" hidden>
+      <legend>Hirukin</legend>
+      <div class="fields">
+        <label>Entrada<input type="time" name="dayStart" required></label>
+        <label>Saída<input type="time" name="dayEnd" required></label>
+      </div>
+    </fieldset>
+    <fieldset class="quickShift" data-quick-shift="night">
+      <legend>Yakin</legend>
+      <div class="fields">
+        <label>Entrada<input type="time" name="nightStart" required></label>
+        <label>Saída<input type="time" name="nightEnd" required></label>
+      </div>
+    </fieldset>
+    <div class="fields quickResult" id="quickResult" aria-live="polite"></div>
+    <p class="small quickAssumptions" id="quickAssumptions"></p>
+    <details class="quickSettings">
+      <summary>Ajustar pausa e dias trabalhados</summary>
+      <div class="fields">
+        <label>Pausa por turno (min)<input type="number" name="pause" min="0" max="1439" step="1" inputmode="numeric" required></label>
+        <label>Dias por mês<input type="number" name="days" min="1" max="31" step="1" inputmode="numeric" required></label>
+      </div>
+    </details>
+  </form>
+  <a href="./">‹ Voltar ao Japan Finance</a>
+</section>
+<details class="quickMore" id="proposalTools">
+<summary>Comparar propostas e ver detalhes</summary>
 <header><a href="./">⛩ JapanFinance</a><span class="small">COMPARADOR DE SERVIÇOS</span><button class="top-action" id="print">Imprimir</button></header>
 <h1>Vale a pena trocar de serviço?</h1><p>Seu trabalho atual à esquerda. A proposta à direita, na mesma linha.</p>
 <div class="toolbar"><label>Proposta em comparação<select id="selected" aria-label="Selecionar proposta"></select></label><button class="primary" id="add">+ Nova proposta</button><label class="basis">Comparar pelo<select id="basis"><option value="gross">Bruto mensal com teate</option><option value="work">Bruto mensal só do trabalho</option></select></label></div>
@@ -11,6 +69,7 @@
 <section class="overview"><h2>Suas propostas</h2><p class="small">Todas comparadas com o trabalho atual. Valores brutos, antes dos descontos.</p><div id="comparison" aria-live="polite"></div></section>
 <details class="notes"><summary>Como funciona o cálculo</summary><ul><li>Simulação de um mês típico: 20 dias e 5 dias por semana como padrão. Cada empresa pode ter sua própria quantidade de dias em “Teate e ajustes”. Sem calendário de feriados.</li><li>Nikotai alterna blocos de semanas de dia e de noite. A primeira semana é de dia como padrão; a quantidade por turno aparece no resumo.</li><li>Regime comum: 8h por jornada e 40h semanais; extra +25%, com +50% na parcela acima de 60h extras no mês. Horas diárias e semanais não são contadas duas vezes.</li><li>Noturno: +25% das 22h às 5h, acumulável com extra. Pausa padrão de 1h: 12h no hirukin e 0h no yakin. Se não couber no turno, fica no meio; o horário efetivamente usado aparece nos ajustes. Ajuste durante a entrevista se necessário.</li><li>Teate entra no total mensal. A base adicional de teate por hora é opcional nos ajustes. Bônus fica separado: não aumenta o bruto de um mês comum.</li><li>Por 便 (bin): quantidade diária × preço por viagem × dias trabalhados. Hora efetiva = bruto do trabalho ÷ horas trabalhadas. É a cotação informada pela empresa; adicionais de extra e noturno não são somados automaticamente ao valor por viagem. Confirme a composição do pagamento.</li><li>Esta versão rápida compara bruto. Não calcula líquido, jornada variável, compensação ou trabalho em descanso legal (+35%). Para esses casos, confirme o regime antes de usar o resultado.</li><li>Taiki sob ordens e sem liberdade não deve ser descontado como pausa. A escala precisa ser conferida quanto aos limites de direção e descanso do setor.</li></ul><a href="https://www.startup-roudou.mhlw.go.jp/qa/zigyonushi/chingin/q14.html" target="_blank" rel="noopener">MHLW · pagamento por produção</a> · <a href="https://www.mhlw.go.jp/stf/seisakunitsuite/bunya/koyou_roudou/roudouseisaku/chushoukigyou/joken_kankyou_rule.html" target="_blank" rel="noopener">MHLW · adicionais legais</a> · <a href="https://www.check-roudou.mhlw.go.jp/qa/roudousya/roudoujikan/q6.html" target="_blank" rel="noopener">MHLW · taiki</a></details>
 <div class="save" id="saved" role="status"></div>
+</details>
 </main><script>
 'use strict';
 const $=id=>document.getElementById(id),yen=n=>new Intl.NumberFormat('ja-JP',{style:'currency',currency:'JPY',maximumFractionDigits:0}).format(Math.round(n)),hm=m=>`${Math.floor(m/60)}h${String(Math.round(m%60)).padStart(2,'0')}`,key='japanfinance-offers-v2';
@@ -25,6 +84,76 @@ for(let d=0;d<days;d++){if(d%week===0)weekNormal=0;let k=c.mode==='both'?(Math.f
 let workPay=totals.base+totals.extra+totals.nightPay;if(c.payment==='bin'){if(!Number.isFinite(Number(c.bins))||Number(c.bins)<=0||!Number.isInteger(Number(c.bins))||Number(c.bins)>1000||!Number.isFinite(Number(c.binRate))||Number(c.binRate)<=0)throw Error('Informe viagens por dia e valor por viagem.');workPay=Number(c.bins)*Number(c.binRate)*days;totals.base=workPay;totals.extra=0;totals.nightPay=0}return {...totals,rows,shifts,days,week,workPay,effective:workPay/(totals.work/60),binCount:c.payment==='bin'?Number(c.bins)*days:0,gross:workPay+teate,daily:workPay/days,weekly:workPay/days*week,annual:(workPay+teate)*12+Number(c.bonus)*Number(c.frequency)}}
 window.truckerCompare={calc,shift,fresh};
 function el(tag,cls,text){let e=document.createElement(tag);if(cls)e.className=cls;if(text!==undefined)e.textContent=text;return e}
+function setupQuickCalculator() {
+  const form = $('quickForm');
+  const fields = form.elements;
+  const result = $('quickResult');
+  const shifts = form.querySelectorAll('[data-quick-shift]');
+  const defaults = fresh('Cálculo rápido', 1900);
+  const storageKey = 'japanfinance-truck-quick-v1';
+  let saved = {};
+  try {
+    saved = JSON.parse(localStorage.getItem(storageKey)) ?? {};
+  } catch {
+    // The calculator also works without browser storage.
+  }
+  const initial = {
+    rate: defaults.rate,
+    mode: 'night',
+    dayStart: defaults.dayStart,
+    dayEnd: defaults.dayEnd,
+    nightStart: defaults.nightStart,
+    nightEnd: defaults.nightEnd,
+    pause: defaults.dayPause,
+    days: defaults.days,
+  };
+  for (const [name, value] of Object.entries(initial)) {
+    fields.namedItem(name).value = saved[name] ?? value;
+  }
+
+  function update() {
+    const mode = fields.mode.value;
+    for (const section of shifts) {
+      const active = mode === 'both' || mode === section.dataset.quickShift;
+      section.hidden = !active;
+      section.disabled = !active;
+    }
+    const values = Object.fromEntries(
+      Object.keys(initial).map(name => [name, fields.namedItem(name).value]),
+    );
+    $('quickAssumptions').textContent = '';
+    result.replaceChildren();
+    try {
+      if (!form.checkValidity()) throw Error('Confira o valor da hora, os horários e os ajustes.');
+      const pay = calc({
+        ...defaults,
+        ...values,
+        dayPause: Number(values.pause),
+        nightPause: Number(values.pause),
+      });
+      for (const [label, amount] of [['Bruto por dia (média)', pay.daily], ['Bruto por mês', pay.workPay]]) {
+        const item = el('div');
+        item.append(el('span', 'caption', label), el('strong', '', yen(amount)));
+        result.append(item);
+      }
+      $('quickAssumptions').textContent =
+        `${pay.days} dias/mês · ${values.pause} min de pausa · com extras e adicional noturno`;
+    } catch (error) {
+      result.append(el('p', 'error', error.message));
+      return;
+    }
+    try {
+      localStorage.setItem(storageKey, JSON.stringify(values));
+    } catch {
+      // A storage failure does not affect the calculation.
+    }
+  }
+
+  form.addEventListener('input', update);
+  form.addEventListener('submit', event => event.preventDefault());
+  update();
+}
+
 function input(parent,c,field,label,type='number',opts={}){let l=el('label',opts.full?'full':'',label),i=document.createElement('input');i.type=type;i.value=c[field];i.dataset.field=field;i.setAttribute('aria-label',label);if(type==='number'){i.min=opts.min??0;i.max=opts.max??10000000;i.step=opts.step??1}if(type==='text')i.maxLength=60;l.append(i);parent.append(l);return i}
 function select(parent,c,field,label,options,full=false){let l=el('label',full?'full':'',label),s=document.createElement('select');s.dataset.field=field;for(let [v,t]of options){let o=el('option','',t);o.value=v;s.append(o)}s.value=c[field];l.append(s);parent.append(l)}
 function line(parent,label,value){let r=el('div','line');r.dataset.align='line-'+label;r.append(el('span','',label),el('strong','',value));parent.append(r)}
@@ -46,5 +175,5 @@ function refresh(){options();let base=result('baseline',state.baseline);result('
 // Replacing nodes removes old listeners when the selected proposal changes.
 function mount(){for(let id of ['baseline','offer']){let old=$(id),node=old.cloneNode(false);old.replaceWith(node)}build('baseline',state.baseline,true);build('offer',state.offers[state.active],false);refresh()}
 function activate(i){state.active=Number(i);mount()}
-$('selected').onchange=e=>activate(e.target.value);$('basis').onchange=e=>{state.basis=e.target.value;refresh()};$('add').onclick=()=>{if(state.offers.length>=20){$('saved').textContent='Limite de 20 propostas neste navegador.';return}let c=fresh(`Proposta ${state.offers.length+1}`);state.offers.push(c);state.active=state.offers.length-1;mount()};$('print').onclick=()=>window.print();mount();
+$('selected').onchange=e=>activate(e.target.value);$('basis').onchange=e=>{state.basis=e.target.value;refresh()};$('add').onclick=()=>{if(state.offers.length>=20){$('saved').textContent='Limite de 20 propostas neste navegador.';return}let c=fresh(`Proposta ${state.offers.length+1}`);state.offers.push(c);state.active=state.offers.length-1;mount()};$('print').onclick=()=>window.print();$('proposalTools').addEventListener('toggle',align);setupQuickCalculator();mount();
 </script></body></html>
